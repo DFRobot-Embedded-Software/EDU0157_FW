@@ -47,7 +47,7 @@ String getCompassData(void)
         angle=0;  
         widDir = "N";
     }
-    if(dir == 0x03){
+    if((dir == 0x03 && angle == 90) || (dir == 0x03 && angle == 0)){
         angle=45;  
         widDir = "NE";
     } 
@@ -55,7 +55,7 @@ String getCompassData(void)
         angle=90;   
         widDir = "E";
     }
-    if(dir == 0x06){
+    if((dir == 0x06 && angle == 180) || (dir == 0x06 && angle == 90)){
         angle=135;  
         widDir = "SE";
      }
@@ -63,7 +63,7 @@ String getCompassData(void)
         angle=180; 
         widDir = "S";
     }
-    if(dir == 0x0C){
+    if((dir == 0x0C && angle == 270) || (dir == 0x0C && angle == 180)){
         angle=225;  
         widDir = "SW";
     }
@@ -71,7 +71,7 @@ String getCompassData(void)
         angle=270;   
         widDir = "W";
     }
-    if(dir == 0x09){
+    if((dir == 0x09 && angle == 0) || (dir == 0x09 && angle == 270)){
         angle=315;
         widDir = "NW";
     }

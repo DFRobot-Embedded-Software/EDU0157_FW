@@ -90,7 +90,7 @@ typedef struct{
   uint8_t saveState;//是否开启存储
   //uint8_t touchState;//触摸状态
   uint32_t sampleRate;//采样速率
-  uint16_t interrcount;//用于测量风速的中断计数
+  uint64_t interrcount;//用于测量风速的中断计数
   float    windCup;//风杯半径
   uint8_t extendDevice;
   uint32_t delayTime;

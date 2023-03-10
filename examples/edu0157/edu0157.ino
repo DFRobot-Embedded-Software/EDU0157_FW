@@ -24,6 +24,7 @@ void loop(void)
   if((Time - windSpeedstartTime) > 1000){
     windSpeedstartTime = millis();
     wSpeed = (3.14 * (pGeneral_t->windCup /10.0) * 2.0 * pGeneral_t->interrcount) / 1.0;
+    //Serial.println(pGeneral_t->interrcount);
     pGeneral_t->interrcount = 0;
   }
   if((Time - delayTime) > pGeneral_t->delayTime){

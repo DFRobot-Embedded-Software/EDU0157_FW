@@ -163,7 +163,6 @@ void sendEvent(void){
 
 
 void i2cloop(){
-  Serial.println(millis());
   if(recvBufferPtr && recvBufferPtr->flag){
     recvBufferPtr->flag = false;
     parseCmdPkt(recvBufferPtr);
