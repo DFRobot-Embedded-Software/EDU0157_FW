@@ -13,7 +13,7 @@
 #define __DFRobot_OxygenSensor_H__
 
 #include <Arduino.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 #define ADDRESS_0   0x70
 #define ADDRESS_1   0x71
@@ -29,6 +29,7 @@ class DFRobot_OxygenSensor
 {
 public:
   DFRobot_OxygenSensor(SoftwareTwoWire *pWire, uint8_t addr);
+  DFRobot_OxygenSensor(TwoWire *pWire, uint8_t addr);
   ~DFRobot_OxygenSensor();
   /**
    * @fn begin
@@ -59,6 +60,7 @@ public:
   
 private:
   SoftwareTwoWire *_pWire; 
+  TwoWire *_pWire1;
   uint8_t  _addr;
   void readFlash();
   void i2cWrite(uint8_t reg, uint8_t data);                           

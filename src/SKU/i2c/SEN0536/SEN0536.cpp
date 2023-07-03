@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0536.h"
-
+extern uint8_t scd4xCom;
 static DFRobot_SCD4X *getDFRobot_SCD4X(uint8_t ifn){
     DFRobot_SCD4X *scd4x = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_SCD4X *getDFRobot_SCD4X(uint8_t ifn){
         default:
               return NULL;
     }
+    scd4xCom = ifn;
     return scd4x;
 }
 

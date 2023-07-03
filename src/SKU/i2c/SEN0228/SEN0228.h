@@ -12,7 +12,7 @@
 #ifndef SEN0228_H
 #define SEN0228_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_VEML7700.h"
 /**
  * @fn SEN0228_SETUP

@@ -20,15 +20,15 @@
 #else
 #include "WProgram.h"
 #endif
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 //#define ENABLE_DBG
 
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG4
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
 #define DBG(...)
 #endif
-#define REG_AS7341_ASTATUS  0X60
+//#define REG_AS7341_ASTATUS  0X60
 /*
 #define REG_AS7341_CH0_DATA_L  0X61
 #define REG_AS7341_CH0_DATA_H  0X62
@@ -121,8 +121,8 @@ class DFRobot_AS7341
 public:
 
 #define ERR_OK             0      //OK
-#define ERR_DATA_BUS      -1      //Data Bus error
-#define ERR_IC_VERSION    -2      //Chip version mismatch 
+#define ERR_DATA_BUS3      -1      //Data Bus error
+#define ERR_IC_VERSION3    -2      //Chip version mismatch 
 
   /**
    * @enum eMode_t
@@ -191,6 +191,7 @@ public:
    * @param pWire IC bus pointer object and construction device, can both pass or not pass parameters, Wire in default.
    */
   DFRobot_AS7341(SoftwareTwoWire *pWire, uint8_t addr); 
+  DFRobot_AS7341(TwoWire *pWire, uint8_t addr); 
 
   /**
    * @fn begin
@@ -360,6 +361,7 @@ private:
   uint8_t readReg(uint8_t reg, void* pBuf, size_t size);
   
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _address;
   uint8_t _mode;
   eMode_t measureMode;

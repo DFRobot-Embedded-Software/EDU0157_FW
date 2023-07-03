@@ -13,7 +13,7 @@
 #define __DFROBOT_SHTC3_H__
 
 #include "DFRobot_SHT.h"
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 class DFRobot_SHTC3: public DFRobot_SHT {
 
@@ -38,7 +38,7 @@ public:
    * @param  pWire  When instantiate this class, you can specify its twowire
    */
   DFRobot_SHTC3(SoftwareTwoWire *pWire);
-  
+  DFRobot_SHTC3(TwoWire *pWire);
   /**
    * @brief  Destructor
    */

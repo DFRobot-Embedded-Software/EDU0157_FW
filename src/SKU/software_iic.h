@@ -16,6 +16,7 @@
 
 #include "Stream.h"
 #include <Arduino.h>
+#include "Wire.h"
 
 #ifndef SOFT_TWO_WIRE_BUFFER_LENGTH
 #define SOFT_TWO_WIRE_BUFFER_LENGTH 64

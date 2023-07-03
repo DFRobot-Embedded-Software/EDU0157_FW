@@ -12,7 +12,7 @@
 #ifndef SEN0517_H
 #define SEN0517_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_ICP10111.h"
 /**
  * @fn SEN0334_SETUP

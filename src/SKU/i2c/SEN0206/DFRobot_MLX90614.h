@@ -14,10 +14,9 @@
 #define __DFROBOT_MLX90614_H__
 
 #include <Arduino.h>
-#include "../../../software_iic.h"
-
+#include "../../software_iic.h"
 // #define ENABLE_DBG   //!< open this macro and you can see the details of the program
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG1
   #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
   #define DBG(...)
@@ -183,7 +182,8 @@ public:
    * @param pWire Wire object is defined in Wire.h, so just use &Wire and the methods in Wire can be pointed to and used
    * @return None
    */
-  DFRobot_MLX90614_I2C(SoftwareTwoWire *pWire, uint8_t i2cAddr=0x5A);
+  DFRobot_MLX90614_I2C(SoftwareTwoWire *pWire, uint8_t i2cAddr);
+  DFRobot_MLX90614_I2C(TwoWire *pWire, uint8_t i2cAddr);
 
   /**
    * @fn begin
@@ -241,6 +241,7 @@ protected:
 
 private:
   SoftwareTwoWire *_pWire;   // pointer to I2C communication method
+  TwoWire *_pWire1;
   uint8_t _deviceAddr;   // I2C communication device address
 };
 

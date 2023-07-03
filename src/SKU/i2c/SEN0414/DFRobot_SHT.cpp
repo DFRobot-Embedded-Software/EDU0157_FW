@@ -12,6 +12,7 @@
  */
 #include "DFRobot_SHT.h"
 
+uint8_t shtc3Com = 0;
 DFRobot_SHT::DFRobot_SHT(uint8_t addr, SoftwareTwoWire *pWire, sDev_t * dev, void *p):
 _pWire(pWire),_deviceAddr(addr),_p(p)
 {
@@ -19,9 +20,20 @@ _pWire(pWire),_deviceAddr(addr),_p(p)
   _mode = 0;
 }
 
+DFRobot_SHT::DFRobot_SHT(uint8_t addr, TwoWire *pWire, sDev_t * dev, void *p):
+_pWire1(pWire),_deviceAddr(addr),_p(p)
+{
+  _dev = dev;
+  _mode = 0;
+}
 void DFRobot_SHT::begin()
 {
-  _pWire->begin();
+  // if(shtc3Com == 1){
+  //   //_pWire->begin();
+  // }else{
+  //   //_pWire1->begin();
+  // }
+  
 }
 
 float DFRobot_SHT::getTemperature(uint16_t mode)
@@ -31,7 +43,7 @@ float DFRobot_SHT::getTemperature(uint16_t mode)
   if(!isMode(mode)){
     return MODE_ERR;
   }
-  while(!getTandRHRawData(&tem, &hum)){
+  if(!getTandRHRawData(&tem, &hum)){
     DBG("ERR:Checksum error!!!");
     delay(1000);
   }
@@ -48,7 +60,7 @@ float DFRobot_SHT::getHumidity(uint16_t mode)
   if(!isMode(mode)){
     return MODE_ERR;
   }
-  while(!getTandRHRawData(&tem, &hum)){
+  if(!getTandRHRawData(&tem, &hum)){
     DBG("ERR:Checksum error!!!");
     delay(1000);
   }
@@ -110,24 +122,43 @@ bool DFRobot_SHT::getTandRHRawData(uint16_t* temp, uint16_t* rh)
 
 void DFRobot_SHT:: writeCommand(uint8_t* command, uint8_t len)
 {
-  _pWire->beginTransmission(_deviceAddr);
+  if(shtc3Com == 1){
+    _pWire->beginTransmission(_deviceAddr);
 
-  for(int i = len-1; i > -1; i--){
-    _pWire->write(command[i]);
+    for(int i = len-1; i > -1; i--){
+      _pWire->write(command[i]);
+    }
+
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+
+    for(int i = len-1; i > -1; i--){
+      _pWire1->write(command[i]);
+    }
+
+    _pWire1->endTransmission();
   }
 
-  _pWire->endTransmission();
 }
 
 uint8_t DFRobot_SHT::readValue(void* pBuf, size_t size)
 {
   uint8_t * _pBuf = (uint8_t *)pBuf;
+  if(shtc3Com == 1){
+    _pWire->requestFrom(_deviceAddr, (uint8_t)size);
 
-  _pWire->requestFrom(_deviceAddr, (uint8_t)size);
+    for(uint16_t i = 0; i < size; i++){
+      _pBuf[i] = _pWire->read();
+    }
+  }else{
+    _pWire1->requestFrom(_deviceAddr, (uint8_t)size);
 
-  for(uint16_t i = 0; i < size; i++){
-    _pBuf[i] = _pWire->read();
+    for(uint16_t i = 0; i < size; i++){
+      _pBuf[i] = _pWire1->read();
+    }
   }
+
   return size;
 }
 

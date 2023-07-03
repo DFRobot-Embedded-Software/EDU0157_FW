@@ -11,10 +11,10 @@
 #ifndef __DFRobot_URM09_H__
 #define __DFRobot_URM09_H__
 
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 #include <Arduino.h>
 
-#define    MEASURE_MODE_AUTOMATIC  0x80           ///< automatic mode
+#define    MEASURE_MODE_AUTOMATIC2  0x80           ///< automatic mode
 #define    MEASURE_MODE_PASSIVE    0x00           ///< passive mode
 
 #define    CMD_DISTANCE_MEASURE    0x01           ///< passive mode configure registers
@@ -49,6 +49,7 @@ public:
    * @return None
    */
   DFRobot_URM09(SoftwareTwoWire * pWire);
+  DFRobot_URM09(TwoWire * pWire);
 
   /**
    * @fn DFRobot_URM09
@@ -75,7 +76,7 @@ public:
    * @n     MEASURE_RANG_300    Ranging from 300 
    * @n     MEASURE_RANG_150    Ranging from 150 
    * @param mode is measurement mode, automatic measurement and passive measurement. 
-   * @n     MEASURE_MODE_AUTOMATIC    automatic mode
+   * @n     MEASURE_MODE_AUTOMATIC2    automatic mode
    * @n     MEASURE_MODE_PASSIVE      passive mode
    * @return None
    */
@@ -132,6 +133,7 @@ public:
 private:
   void    i2cWriteTemDistance(uint8_t reg, uint8_t *pdata, uint8_t datalen);
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _addr;
 
 };

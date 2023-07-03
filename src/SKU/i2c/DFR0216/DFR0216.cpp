@@ -10,8 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "DFR0216.h"
-#include "../../../software_iic.h"
-
+#include "../../software_iic.h"
 #define REG_WIND_DIR     0x00
 #define REG_WIND_SPEED   0x02
 #define REG_PRESSURE     0x06

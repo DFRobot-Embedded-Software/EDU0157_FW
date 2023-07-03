@@ -11,7 +11,7 @@
 #ifndef __DFRobot_BloodOxygen_S_H__
 #define __DFRobot_BloodOxygen_S_H__
 #include "Arduino.h"
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 #if defined(ARDUINO_AVR_UNO) || defined(ESP8266)
 #include "SoftwareSerial.h"
 #else
@@ -19,9 +19,9 @@
 #endif 
 
 // Open this macro to see the program running in detail
-#define ENABLE_DBG
+//#define ENABLE_DBG
 
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG10
 #define DBG(...)                 \
   {                              \
     Serial.print("[");           \
@@ -146,7 +146,8 @@ class DFRobot_BloodOxygen_S
 class DFRobot_BloodOxygen_S_I2C : public DFRobot_BloodOxygen_S
 {
   public:
-    DFRobot_BloodOxygen_S_I2C(SoftwareTwoWire *pWire, uint8_t addr = 0x57);
+    DFRobot_BloodOxygen_S_I2C(SoftwareTwoWire *pWire, uint8_t addr);
+    DFRobot_BloodOxygen_S_I2C(TwoWire *pWire, uint8_t addr);
     ~DFRobot_BloodOxygen_S_I2C(){};
     bool begin(uint8_t addr);
   protected:
@@ -154,6 +155,7 @@ class DFRobot_BloodOxygen_S_I2C : public DFRobot_BloodOxygen_S
     int16_t readReg(uint16_t reg_addr, uint8_t *data_buf, uint8_t len);
   private:
     SoftwareTwoWire *_pWire;
+    TwoWire *_pWire1;
     uint8_t _I2C_addr;
 };
 extern DFRobot_BloodOxygen_S_I2C SEN0518_1;

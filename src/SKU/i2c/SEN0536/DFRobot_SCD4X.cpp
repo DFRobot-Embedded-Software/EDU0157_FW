@@ -12,11 +12,16 @@
 #include "DFRobot_SCD4X.h"
 
 /**************************** Init and reset ********************************/
-
+uint8_t scd4xCom = 0;
 DFRobot_SCD4X::DFRobot_SCD4X(SoftwareTwoWire *pWire, uint8_t i2cAddr)
 {
   _deviceAddr = i2cAddr;
   _pWire = pWire;
+}
+DFRobot_SCD4X::DFRobot_SCD4X(TwoWire *pWire, uint8_t i2cAddr)
+{
+  _deviceAddr = i2cAddr;
+  _pWire1 = pWire;
 }
 
 bool DFRobot_SCD4X::begin(uint8_t i2cAddr)
@@ -45,17 +50,21 @@ void DFRobot_SCD4X::setSleepMode(uint16_t mode)
 uint16_t DFRobot_SCD4X::performSelfTest(void)
 {
   writeData(SCD4X_PERFORM_SELF_TEST, NULL, 0);
-
-  delay(10000);
-
-  _pWire->requestFrom(_deviceAddr, (uint8_t)3);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
-
   uint8_t count = 0;
-  uint8_t buf[3] = {0};
-
-  while (_pWire->available()) {
-    buf[count++] = _pWire->read();   // Use read() to receive and put into buf
+    uint8_t buf[3] = {0};
+  delay(10000);
+  if(scd4xCom == 1){
+    _pWire->requestFrom(_deviceAddr, (uint8_t)3);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+    while (_pWire->available()) {
+      buf[count++] = _pWire->read();   // Use read() to receive and put into buf
+    }
+  }else{
+    _pWire1->requestFrom(_deviceAddr, (uint8_t)3);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+    while (_pWire1->available()) {
+      buf[count++] = _pWire1->read();   // Use read() to receive and put into buf
+    }
   }
+
 
   return SCD4X_CONCAT_BYTES(buf[0], buf[1]);
 }
@@ -174,21 +183,26 @@ void DFRobot_SCD4X::setAmbientPressure(uint32_t ambientPressure)
 int16_t DFRobot_SCD4X::performForcedRecalibration(uint16_t CO2ppm)
 {
   uint8_t * sendPack = pack(CO2ppm);
-
+  uint8_t count = 0;
+  uint8_t buf[3] = {0};
   writeData(SCD4X_PERFORM_FORCED_RECALIB, sendPack, 3);
 
   free(sendPack);
 
   delay(400);   // command execution time
+  if(scd4xCom == 1){
+    _pWire->requestFrom(_deviceAddr, (uint8_t)3);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+    while (_pWire->available()) {
+      buf[count++] = _pWire->read();   // Use read() to receive and put into buf
+    }
+  }else{
+    _pWire1->requestFrom(_deviceAddr, (uint8_t)3);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
 
-  _pWire->requestFrom(_deviceAddr, (uint8_t)3);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
-
-  uint8_t count = 0;
-  uint8_t buf[3] = {0};
-
-  while (_pWire->available()) {
-    buf[count++] = _pWire->read();   // Use read() to receive and put into buf
+    while (_pWire1->available()) {
+      buf[count++] = _pWire1->read();   // Use read() to receive and put into buf
+    }
   }
+  
 
   return (int16_t)(SCD4X_CONCAT_BYTES(buf[0], buf[1]) - 0x8000);
 }
@@ -282,16 +296,28 @@ void DFRobot_SCD4X::writeData(uint16_t cmd, const void* pBuf, size_t size)
   //   DBG("pBuf ERROR!! : null pointer");
   // }
   uint8_t * _pBuf = (uint8_t *)pBuf;
+  if(scd4xCom == 1){
+    _pWire->beginTransmission(_deviceAddr);
+    _pWire->write((uint8_t)((cmd >> 8) & 0xFF));
+    _pWire->write((uint8_t)(cmd & 0xFF));
 
-  _pWire->beginTransmission(_deviceAddr);
-  _pWire->write((uint8_t)((cmd >> 8) & 0xFF));
-  _pWire->write((uint8_t)(cmd & 0xFF));
+    for(size_t i = 0; i < size; i++) {
+      // DBG(_pBuf[i]);
+      _pWire->write(_pBuf[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+    _pWire1->write((uint8_t)((cmd >> 8) & 0xFF));
+    _pWire1->write((uint8_t)(cmd & 0xFF));
 
-  for(size_t i = 0; i < size; i++) {
-    // DBG(_pBuf[i]);
-    _pWire->write(_pBuf[i]);
+    for(size_t i = 0; i < size; i++) {
+      // DBG(_pBuf[i]);
+      _pWire1->write(_pBuf[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 size_t DFRobot_SCD4X::readData(uint16_t cmd, void* pBuf, size_t size)
@@ -301,23 +327,40 @@ size_t DFRobot_SCD4X::readData(uint16_t cmd, void* pBuf, size_t size)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t*)pBuf;
+  if(scd4xCom == 1){
+    _pWire->beginTransmission(_deviceAddr);
+    _pWire->write((uint8_t)((cmd >> 8) & 0xFF));
+    _pWire->write((uint8_t)(cmd & 0xFF));
 
-  _pWire->beginTransmission(_deviceAddr);
-  _pWire->write((uint8_t)((cmd >> 8) & 0xFF));
-  _pWire->write((uint8_t)(cmd & 0xFF));
-
-  if(0 != _pWire->endTransmission()) {   // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
-    DBG("endTransmission ERROR!!");
-  } else {
-    _pWire->requestFrom(_deviceAddr, (uint8_t)size);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
-    
-    while (_pWire->available()) {
-      _pBuf[count++] = _pWire->read();   // Use read() to receive and put into buf
+    if(0 != _pWire->endTransmission()) {   // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
+      DBG("endTransmission ERROR!!");
+    } else {
+      _pWire->requestFrom(_deviceAddr, (uint8_t)size);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+      
+      while (_pWire->available()) {
+        _pBuf[count++] = _pWire->read();   // Use read() to receive and put into buf
+      }
+      // _pWire->endTransmission();
     }
-    // _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+    _pWire1->write((uint8_t)((cmd >> 8) & 0xFF));
+    _pWire1->write((uint8_t)(cmd & 0xFF));
+
+    if(0 != _pWire1->endTransmission()) {   // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
+      DBG("endTransmission ERROR!!");
+    } else {
+      _pWire1->requestFrom(_deviceAddr, (uint8_t)size);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+      
+      while (_pWire1->available()) {
+        _pBuf[count++] = _pWire1->read();   // Use read() to receive and put into buf
+      }
+      // _pWire->endTransmission();
+    }
   }
+
   return count;
 }
 
 DFRobot_SCD4X SCD4X_1(&SOF_WIRE1, 0x62);
-DFRobot_SCD4X SCD4X_2(&SOF_WIRE2, 0x62);
+DFRobot_SCD4X SCD4X_2(&Wire1, 0x62);

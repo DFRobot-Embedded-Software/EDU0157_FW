@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0304.h"
-
+extern uint8_t urm09Com;
 static DFRobot_URM09 *getDFRobot_URM09(uint8_t ifn){
     DFRobot_URM09 *urm09 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_URM09 *getDFRobot_URM09(uint8_t ifn){
         default:
               return NULL;
     }
+    urm09Com = ifn;
     return urm09;
 }
 
@@ -35,7 +36,7 @@ struct sensorAttr* SEN0304_SETUP(uint8_t ifn, uint8_t address){
     if(urm09 == NULL) return NULL;
     
     if(urm09->begin(address) == 0) return NULL; 
-    urm09->setModeRange(MEASURE_MODE_AUTOMATIC ,MEASURE_RANG_500);
+    urm09->setModeRange(MEASURE_MODE_AUTOMATIC2 ,MEASURE_RANG_500);
 
     attr = new  sensorAttr;
     if(attr == NULL) return NULL;

@@ -16,11 +16,11 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 
 // #define ENABLE_DBG   //!< Open this macro and you can see the details of the program
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG8
   #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
   #define DBG(...)
@@ -73,8 +73,8 @@ class DFRobot_ENS160
 {
 public:
   #define NO_ERR             0    // No error
-  #define ERR_DATA_BUS     (-1)   // Data bus error
-  #define ERR_IC_VERSION   (-2)   // Chip version error
+  #define ERR_DATA_BUS1     (-1)   // Data bus error
+  #define ERR_IC_VERSION1   (-2)   // Chip version error
 
 /************************* Interrupt Pin Configuration *******************************/
   /**
@@ -175,8 +175,8 @@ public:
    * @brief Init function
    * @return int type, indicates returning init status
    * @retval 0 NO_ERROR
-   * @retval -1 ERR_DATA_BUS
-   * @retval -2 ERR_IC_VERSION
+   * @retval -1 ERR_DATA_BUS1
+   * @retval -2 ERR_IC_VERSION1
    */
   int begin(void);
 
@@ -305,15 +305,16 @@ public:
    * @param i2cAddr The I2C address is 0x52 when SDO pin is connected to GND and 0x53 when connected to VCC.
    * @return None
    */
-  DFRobot_ENS160_I2C(SoftwareTwoWire *pWire, uint8_t i2cAddr=0x52);
+  DFRobot_ENS160_I2C(SoftwareTwoWire *pWire, uint8_t i2cAddr);
+  DFRobot_ENS160_I2C(TwoWire *pWire, uint8_t i2cAddr);
 
   /**
    * @fn begin
    * @brief Subclass init function
    * @return int type, indicates returning init status
    * @retval 0 NO_ERROR
-   * @retval -1 ERR_DATA_BUS
-   * @retval -2 ERR_IC_VERSION
+   * @retval -1 ERR_DATA_BUS1
+   * @retval -2 ERR_IC_VERSION1
    */
   int begin(uint8_t addr);
 
@@ -340,6 +341,7 @@ protected:
 
 private:
   SoftwareTwoWire *_pWire;   // Pointer to I2C communication method
+  TwoWire *_pWire1;
   uint8_t _deviceAddr;   // Address of the device for I2C communication
 };
 
@@ -360,8 +362,8 @@ public:
    * @brief Subclass init function
    * @return int type, indicates returning init status
    * @retval 0 NO_ERROR
-   * @retval -1 ERR_DATA_BUS
-   * @retval -2 ERR_IC_VERSION
+   * @retval -1 ERR_DATA_BUS1
+   * @retval -2 ERR_IC_VERSION1
    */
   virtual int begin(void);
 

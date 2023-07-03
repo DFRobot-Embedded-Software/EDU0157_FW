@@ -12,8 +12,9 @@
 #ifndef TEL0157_H
 #define TEL0157_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_GNSS.h"
+#include "../../../general.h"
 
 /**
  * @fn TEL0157_SETUP

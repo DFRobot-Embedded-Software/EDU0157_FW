@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0321.h"
-
+extern uint8_t OzoneCom;
 static DFRobot_OzoneSensor *getDFRobot_SEN0321(uint8_t ifn){
     DFRobot_OzoneSensor *Ozone = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_OzoneSensor *getDFRobot_SEN0321(uint8_t ifn){
         default:
               return NULL;
     }
+    OzoneCom = ifn;
     return Ozone;
 }
 

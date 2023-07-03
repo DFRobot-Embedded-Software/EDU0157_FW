@@ -10,22 +10,37 @@
 */
  
 #include "DFRobot_AS7341.h"
-
+uint8_t as7341Com = 0;
 
 DFRobot_AS7341::DFRobot_AS7341(SoftwareTwoWire *pWire, uint8_t addr)
 {
   _pWire = pWire;
   _address = addr;
 } 
+
+DFRobot_AS7341::DFRobot_AS7341(TwoWire *pWire, uint8_t addr)
+{
+  _pWire1 = pWire;
+  _address = addr;
+} 
 int DFRobot_AS7341::begin(eMode_t mode) 
 {
-
-  _pWire->beginTransmission(_address);
-  if(_pWire->endTransmission() != 0){
-    DBG("");
-    DBG("bus data access error"); DBG("");
-    return ERR_DATA_BUS;
+  if(as7341Com == 1){
+    _pWire->beginTransmission(_address);
+    if(_pWire->endTransmission() != 0){
+      DBG("");
+      DBG("bus data access error"); DBG("");
+      return ERR_DATA_BUS3;
+    }
+  }else{
+    _pWire1->beginTransmission(_address);
+    if(_pWire1->endTransmission() != 0){
+      DBG("");
+      DBG("bus data access error"); DBG("");
+      return ERR_DATA_BUS3;
+    }
   }
+
   enableAS7341(true);
   measureMode = mode;
   return ERR_OK;
@@ -644,12 +659,22 @@ void DFRobot_AS7341::writeReg(uint8_t reg, void* pBuf, size_t size)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
-  _pWire->beginTransmission(_address);
-  _pWire->write(reg);
-  for (uint16_t i = 0; i < size; i++) {
-    _pWire->write(_pBuf[i]);
+  if(as7341Com == 1){
+    _pWire->beginTransmission(_address);
+    _pWire->write(reg);
+    for (uint16_t i = 0; i < size; i++) {
+      _pWire->write(_pBuf[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_address);
+    _pWire1->write(reg);
+    for (uint16_t i = 0; i < size; i++) {
+      _pWire1->write(_pBuf[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 uint8_t DFRobot_AS7341::readReg(uint8_t reg){
   
@@ -663,18 +688,32 @@ uint8_t DFRobot_AS7341::readReg(uint8_t reg, void* pBuf, size_t size)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
-  _pWire->beginTransmission(_address);
-  _pWire->write(reg);
-  if ( _pWire->endTransmission() != 0) {
-    return 0;
+  if(as7341Com == 1){
+    _pWire->beginTransmission(_address);
+    _pWire->write(reg);
+    if ( _pWire->endTransmission() != 0) {
+      return 0;
+    }
+    delay(10);
+    _pWire->requestFrom(_address, size);
+    for (uint16_t i = 0; i < size; i++) {
+      _pBuf[i] = _pWire->read();
+    }
+  }else{
+    _pWire1->beginTransmission(_address);
+    _pWire1->write(reg);
+    if ( _pWire1->endTransmission() != 0) {
+      return 0;
+    }
+    delay(10);
+    _pWire1->requestFrom(_address, size);
+    for (uint16_t i = 0; i < size; i++) {
+      _pBuf[i] = _pWire1->read();
+    }
   }
-  delay(10);
-  _pWire->requestFrom(_address, size);
-  for (uint16_t i = 0; i < size; i++) {
-    _pBuf[i] = _pWire->read();
-  }
+
   return size;
 }
 
 DFRobot_AS7341 as7341_1(&SOF_WIRE1, 0x39);
-DFRobot_AS7341 as7341_2(&SOF_WIRE2, 0x39);
+DFRobot_AS7341 as7341_2(&Wire1, 0x39);

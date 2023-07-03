@@ -14,7 +14,7 @@
 
 
 #include"DFRobot_SHT.h"
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 class DFRobot_SHT40:public DFRobot_SHT{
 public:
 
@@ -41,6 +41,7 @@ public:
    * @param  pWire  When instantiate this class, you can specify its twowire
    */
   DFRobot_SHT40(uint8_t addr, SoftwareTwoWire *pWire);
+  DFRobot_SHT40(uint8_t addr, TwoWire *pWire);
 
   /**
    * @brief  Init Wire, and perform software reset for the sensor 

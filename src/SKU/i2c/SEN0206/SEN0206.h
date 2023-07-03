@@ -12,8 +12,8 @@
 #ifndef SEN0206_H
 #define SEN0206_H
 #include "Arduino.h"
-#include "../../../global.h"
 #include "DFRobot_MLX90614.h"
+#include "../../sensor_i2c.h"
 /**
  * @fn SEN0529_SETUP
  * @brief SEN0206 传感器初始化

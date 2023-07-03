@@ -27,6 +27,22 @@ DFRobot_SHT(SHTC3_IIC_ADDR, pWire, deviceinit, this)
   deviceinit[SHT_CALCULATE_TEM].fun = (void (*)(...))&DFRobot_SHTC3::getTemValueCB;
 }
 
+DFRobot_SHTC3::DFRobot_SHTC3(TwoWire *pWire):
+DFRobot_SHT(SHTC3_IIC_ADDR, pWire, deviceinit, this)
+{
+  deviceinit[SHT_CONFIG_ID].addr = COMMAND_DEVICE_ID;
+  deviceinit[SHT_CONFIG_SOFT_RESET].addr = COMMAND_SOFTWARE_RESET;
+  deviceinit[SHT_CONFIG_MODE].addr = 0;
+  deviceinit[SHT_CALCULATE_HUM].addr = 0;
+  deviceinit[SHT_CALCULATE_TEM].addr = 0;
+  deviceinit[SHT_CONFIG_ID].len = deviceinit[SHT_CONFIG_SOFT_RESET].len = deviceinit[SHT_CONFIG_MODE].len = deviceinit[SHT_CALCULATE_HUM].len  = deviceinit[SHT_CALCULATE_TEM].len = 2;
+  deviceinit[SHT_CONFIG_ID].fun = (void(*)(...))&DFRobot_SHTC3::getDeviceIDCB;
+  deviceinit[SHT_CONFIG_SOFT_RESET].fun = (void (*)(...))&DFRobot_SHTC3::softwareResetCB;
+  deviceinit[SHT_CONFIG_MODE].fun = (void (*)(...))&DFRobot_SHTC3::setModeCB;
+  deviceinit[SHT_CALCULATE_HUM].fun = (void (*)(...))&DFRobot_SHTC3::getHumValueCB;
+  deviceinit[SHT_CALCULATE_TEM].fun = (void (*)(...))&DFRobot_SHTC3::getTemValueCB;
+}
+
 void DFRobot_SHTC3::begin()
 {
   DFRobot_SHT::begin();
@@ -113,4 +129,4 @@ void DFRobot_SHTC3::getTemValueCB(void * tem)
   *(float *)tem =  -45 + 175*((*(float *)tem)/65536);
 }
 DFRobot_SHTC3 SHTC3_1(&SOF_WIRE1);
-DFRobot_SHTC3 SHTC3_2(&SOF_WIRE2);
+DFRobot_SHTC3 SHTC3_2(&Wire1);

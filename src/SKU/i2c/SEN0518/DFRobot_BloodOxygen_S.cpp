@@ -9,7 +9,7 @@
  * @url https://github.com/DFRobot/DFRobot_BloodOxygen_S
  */
 #include "DFRobot_BloodOxygen_S.h"
-
+uint8_t MAX30102Com = 0;
 static uint16_t calculate_CRC(uint8_t *data, uint8_t len)
 {
   uint16_t crc = 0xFFFF;
@@ -125,47 +125,81 @@ DFRobot_BloodOxygen_S_I2C::DFRobot_BloodOxygen_S_I2C(SoftwareTwoWire *pWire, uin
   this->_I2C_addr = addr;
 }
 
+DFRobot_BloodOxygen_S_I2C::DFRobot_BloodOxygen_S_I2C(TwoWire *pWire, uint8_t addr)
+{
+  _pWire1 = pWire;
+  this->_I2C_addr = addr;
+}
+
 bool DFRobot_BloodOxygen_S_I2C::begin(uint8_t addr)
 {
   this->_I2C_addr = addr;
-  _pWire->beginTransmission(_I2C_addr);
-  if (_pWire->endTransmission() == 0)
-  {
-    return true;
+  if(MAX30102Com == 1){
+    _pWire->beginTransmission(_I2C_addr);
+    if (_pWire->endTransmission() == 0)
+      return true;
+  }else{
+     _pWire1->beginTransmission(_I2C_addr);
+    if (_pWire1->endTransmission() == 0)
+      return true;
   }
-  else
-  {
-    return false;
-  }
+ 
+  return false;
 }
 
 void DFRobot_BloodOxygen_S_I2C::writeReg(uint16_t reg_addr, uint8_t *data_buf, uint8_t len)
 {
-  _pWire->beginTransmission(this->_I2C_addr);
-  _pWire->write(reg_addr);
-  for (uint8_t i = 0; i < len; i++)
-  {
-    _pWire->write(data_buf[i]);
+  if(MAX30102Com == 1){
+    _pWire->beginTransmission(this->_I2C_addr);
+    _pWire->write(reg_addr);
+    for (uint8_t i = 0; i < len; i++)
+    {
+      _pWire->write(data_buf[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(this->_I2C_addr);
+    _pWire1->write(reg_addr);
+    for (uint8_t i = 0; i < len; i++)
+    {
+      _pWire1->write(data_buf[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 int16_t DFRobot_BloodOxygen_S_I2C::readReg(uint16_t reg_addr, uint8_t *data_buf, uint8_t len)
 {
   int i = 0;
-  _pWire->beginTransmission(this->_I2C_addr);
-  _pWire->write(reg_addr);
-  if (_pWire->endTransmission() != 0)
-  {
-    return -1;
+  if(MAX30102Com == 1){
+    _pWire->beginTransmission(this->_I2C_addr);
+    _pWire->write(reg_addr);
+    if (_pWire->endTransmission() != 0)
+    {
+      return -1;
+    }
+    _pWire->requestFrom((uint8_t)this->_I2C_addr, (uint8_t)len);
+    while (_pWire->available())
+    {
+      data_buf[i++] = _pWire->read();
+    }
+  }else{
+    _pWire1->beginTransmission(this->_I2C_addr);
+    _pWire1->write(reg_addr);
+    if (_pWire1->endTransmission() != 0)
+    {
+      return -1;
+    }
+    _pWire1->requestFrom((uint8_t)this->_I2C_addr, (uint8_t)len);
+    while (_pWire1->available())
+    {
+      data_buf[i++] = _pWire1->read();
+    }
   }
-  _pWire->requestFrom((uint8_t)this->_I2C_addr, (uint8_t)len);
-  while (_pWire->available())
-  {
-    data_buf[i++] = _pWire->read();
-  }
+
   return len;
 }
 
 DFRobot_BloodOxygen_S_I2C SEN0518_1(&SOF_WIRE1, 0x57);
-DFRobot_BloodOxygen_S_I2C SEN0518_2(&SOF_WIRE2, 0x57);
+DFRobot_BloodOxygen_S_I2C SEN0518_2(&Wire1, 0x57);

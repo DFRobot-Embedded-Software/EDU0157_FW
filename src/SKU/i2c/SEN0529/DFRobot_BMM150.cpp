@@ -9,7 +9,7 @@
  * @url         https://github.com/DFRobot/DFRobot_BMM150
  */
 #include "DFRobot_BMM150.h"
-
+uint8_t bmm150Com = 0;
 DFRobot_BMM150::DFRobot_BMM150()
 {
 }
@@ -889,49 +889,96 @@ DFRobot_BMM150_I2C::DFRobot_BMM150_I2C(SoftwareTwoWire *pWire, uint8_t addr)
   _pWire = pWire;
   this->_I2C_addr = addr;
 }
+DFRobot_BMM150_I2C::DFRobot_BMM150_I2C(TwoWire *pWire, uint8_t addr)
+{
+  _pWire1 = pWire;
+  this->_I2C_addr = addr;
+}
 
 uint8_t DFRobot_BMM150_I2C::begin(uint8_t addr)
 {
   this->_I2C_addr = addr;
-  _pWire->beginTransmission(_I2C_addr);
-  if(_pWire->endTransmission() == 0){
-    if(sensorInit()){
-      return 0;
+  if(bmm150Com == 1){
+    _pWire->beginTransmission(_I2C_addr);
+    if(_pWire->endTransmission() == 0){
+      if(sensorInit()){
+        return 0;
+      }else{
+        DBG("Chip id error ,please check sensor!");
+        return 2;
+      }
     }else{
-      DBG("Chip id error ,please check sensor!");
-      return 2;
+      DBG("I2C device address error or no connection!");
+      return 1;
     }
   }else{
-    DBG("I2C device address error or no connection!");
-    return 1;
+    _pWire1->beginTransmission(_I2C_addr);
+    if(_pWire1->endTransmission() == 0){
+      if(sensorInit()){
+        return 0;
+      }else{
+        DBG("Chip id error ,please check sensor!");
+        return 2;
+      }
+    }else{
+      DBG("I2C device address error or no connection!");
+      return 1;
+    }
   }
+
 }
 
 void DFRobot_BMM150_I2C::writeData(uint8_t Reg, uint8_t *Data, uint8_t len)
 {
-  _pWire->beginTransmission(this->_I2C_addr);
-  _pWire->write(Reg);
-  for(uint8_t i = 0; i < len; i++)
-  {
-    _pWire->write(Data[i]);
+  if(bmm150Com == 1){
+    _pWire->beginTransmission(this->_I2C_addr);
+    _pWire->write(Reg);
+    for(uint8_t i = 0; i < len; i++)
+    {
+      _pWire->write(Data[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(this->_I2C_addr);
+    _pWire1->write(Reg);
+    for(uint8_t i = 0; i < len; i++)
+    {
+      _pWire1->write(Data[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 int16_t DFRobot_BMM150_I2C::readData(uint8_t Reg, uint8_t *Data ,uint8_t len)
 {
   int i=0;
-  _pWire->beginTransmission(this->_I2C_addr);
-  _pWire->write(Reg);
-  if(_pWire->endTransmission() != 0)
-  {
-    return -1;
+  if(bmm150Com == 1){
+    _pWire->beginTransmission(this->_I2C_addr);
+    _pWire->write(Reg);
+    if(_pWire->endTransmission() != 0)
+    {
+      return -1;
+    }
+    _pWire->requestFrom((uint8_t)this->_I2C_addr, (uint8_t)len);
+    while (_pWire->available())
+    {
+      Data[i++]=_pWire->read();
+    }
+  }else{
+    _pWire1->beginTransmission(this->_I2C_addr);
+    _pWire1->write(Reg);
+    if(_pWire1->endTransmission() != 0)
+    {
+      return -1;
+    }
+    _pWire1->requestFrom((uint8_t)this->_I2C_addr, (uint8_t)len);
+    while (_pWire1->available())
+    {
+      Data[i++]=_pWire1->read();
+    }
   }
-  _pWire->requestFrom((uint8_t)this->_I2C_addr, (uint8_t)len);
-  while (_pWire->available())
-  {
-    Data[i++]=_pWire->read();
-  }
+
   return 0;
 }
 
@@ -979,4 +1026,4 @@ int16_t DFRobot_BMM150_SPI::readData(uint8_t Reg, uint8_t *Data, uint8_t len)
 
 
 DFRobot_BMM150_I2C BMM150_1(&SOF_WIRE1, 0x13);
-DFRobot_BMM150_I2C BMM150_2(&SOF_WIRE2, 0x13);
+DFRobot_BMM150_I2C BMM150_2(&Wire1, 0x13);

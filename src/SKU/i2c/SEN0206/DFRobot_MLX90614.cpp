@@ -10,6 +10,7 @@
  * @url  https://github.com/DFRobot/DFRobot_MLX90614
  */
 #include "DFRobot_MLX90614.h"
+uint8_t mlx90614Com = 0;
 
 DFRobot_MLX90614::DFRobot_MLX90614()
 {
@@ -125,6 +126,11 @@ DFRobot_MLX90614_I2C::DFRobot_MLX90614_I2C(SoftwareTwoWire *pWire, uint8_t addr)
   _deviceAddr = addr;
   _pWire = pWire;
 }
+DFRobot_MLX90614_I2C::DFRobot_MLX90614_I2C(TwoWire *pWire, uint8_t addr)
+{
+  _deviceAddr = addr;
+  _pWire1 = pWire;
+}
 
 int DFRobot_MLX90614_I2C::begin(uint8_t i2cAddr)
 {
@@ -219,15 +225,27 @@ void DFRobot_MLX90614_I2C::writeReg(uint8_t reg, const void* pBuf)
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
   unsigned char crc_write[5] = {(uint8_t)(_deviceAddr << 1), reg, _pBuf[0], _pBuf[1], '\0'};   // the array prepared for calculating the check code
+  if(mlx90614Com == 1){
+    _pWire->beginTransmission(_deviceAddr);
+    _pWire->write(reg);
 
-  _pWire->beginTransmission(_deviceAddr);
-  _pWire->write(reg);
+    for(size_t i = 0; i < 2; i++){
+      _pWire->write(_pBuf[i]);
+    }
+    _pWire->write(crc8Polyomial107(crc_write, 4));
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+    _pWire1->write(reg);
 
-  for(size_t i = 0; i < 2; i++){
-    _pWire->write(_pBuf[i]);
+    for(size_t i = 0; i < 2; i++){
+      _pWire1->write(_pBuf[i]);
+    }
+    _pWire1->write(crc8Polyomial107(crc_write, 4));
+    _pWire1->endTransmission();
   }
-  _pWire->write(crc8Polyomial107(crc_write, 4));
-  _pWire->endTransmission();
+
+  
 }
 
 size_t DFRobot_MLX90614_I2C::readReg(uint8_t reg, void* pBuf)
@@ -237,21 +255,40 @@ size_t DFRobot_MLX90614_I2C::readReg(uint8_t reg, void* pBuf)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t*)pBuf;
-
-  _pWire->beginTransmission(_deviceAddr);
-  _pWire -> write(reg);
-  if(0 != _pWire->endTransmission(false)){
-    // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
-    DBG("endTransmission ERROR!!");
-  }else{
+  if(mlx90614Com == 1){
+    _pWire->beginTransmission(_deviceAddr);
+    _pWire -> write(reg);
+    if(0 != _pWire->endTransmission(false)){
+      // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
+      DBG("endTransmission ERROR!!");
+    }else{
     // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
-    _pWire->requestFrom( _deviceAddr, (uint8_t)3 );
+      _pWire->requestFrom( _deviceAddr, (uint8_t)3 );
 
-    while (_pWire->available()){
-      _pBuf[count++] = _pWire->read();   // Use read() to receive and put into buf
+      while (_pWire->available()){
+        _pBuf[count++] = _pWire->read();   // Use read() to receive and put into buf
       // DBG(_pBuf[count-1], HEX);
+      }
+      _pWire->endTransmission();
     }
-    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+    _pWire1 -> write(reg);
+    if(0 != _pWire1->endTransmission(false)){
+      // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
+      DBG("endTransmission ERROR!!");
+    }else{
+      // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+      _pWire1->requestFrom( _deviceAddr, (uint8_t)3 );
+
+      while (_pWire1->available()){
+        _pBuf[count++] = _pWire1->read();   // Use read() to receive and put into buf
+        // DBG(_pBuf[count-1], HEX);
+      }
+      _pWire1->endTransmission();
+    }
+  }
+  
 
     // the array prepared for calculating the check code
     unsigned char crc_read[6] = {(uint8_t)(_deviceAddr << 1), reg, (uint8_t)((_deviceAddr << 1) | 1), _pBuf[0], _pBuf[1], '\0'};
@@ -261,9 +298,8 @@ size_t DFRobot_MLX90614_I2C::readReg(uint8_t reg, void* pBuf)
       DBG("crc8Polyomial107 ERROR!!");
       DBG(_pBuf[2], HEX);
     }
-  }
 
   return count;
 }
 DFRobot_MLX90614_I2C MLX90614_1(&SOF_WIRE1, 0x5A);
-DFRobot_MLX90614_I2C MLX90614_2(&SOF_WIRE2, 0x5A);
+DFRobot_MLX90614_I2C MLX90614_2(&Wire1, 0x5A);

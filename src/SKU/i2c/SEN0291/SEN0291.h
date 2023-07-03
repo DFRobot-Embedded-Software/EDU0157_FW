@@ -12,7 +12,7 @@
 #ifndef SEN0291_H
 #define SEN0291_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_INA219.h"
 /**
  * @fn SEN0529_SETUP

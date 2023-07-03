@@ -1,5 +1,5 @@
 #include "SEN0414.h"
-
+extern uint8_t shtc3Com;
 static DFRobot_SHTC3 *getDFRobot_SHTC3(uint8_t ifn){
     DFRobot_SHTC3 *shtc3 = NULL;
     switch(ifn){
@@ -12,6 +12,7 @@ static DFRobot_SHTC3 *getDFRobot_SHTC3(uint8_t ifn){
         default:
               return NULL;
     }
+    shtc3Com = ifn;
     return shtc3;
 }
 

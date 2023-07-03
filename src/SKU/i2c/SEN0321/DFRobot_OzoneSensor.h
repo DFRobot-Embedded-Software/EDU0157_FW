@@ -11,13 +11,13 @@
 #ifndef __DFRobot_OzoneSensor_H__
 #define __DFRobot_OzoneSensor_H__
 #include <Arduino.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 #define           OZONE_ADDRESS_0           0x70
 #define           OZONE_ADDRESS_1           0x71
 #define           OZONE_ADDRESS_2           0x72
 #define           OZONE_ADDRESS_3           0x73
-#define           MEASURE_MODE_AUTOMATIC    0x00           ///< active  mode
+#define           MEASURE_MODE_AUTOMATIC1    0x00           ///< active  mode
 #define           MEASURE_MODE_PASSIVE      0x01           ///< passive mode
 #define           AUTO_READ_DATA            0x00           ///< auto read ozone data
 #define           PASSIVE_READ_DATA         0x01           ///< passive read ozone data
@@ -32,6 +32,7 @@
 class DFRobot_OzoneSensor{
 public:
   DFRobot_OzoneSensor(SoftwareTwoWire * pWire);
+  DFRobot_OzoneSensor(TwoWire * pWire);
   ~DFRobot_OzoneSensor();
 
   /**
@@ -73,6 +74,7 @@ private:
   int ozoneData[OCOUNT] = {0x00};
   int getAverageNum(int bArray[], int iFilterLen);
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _addr;       ///< IIC Slave number
   uint8_t _M_Flag = 0; ///< mode flag
 };

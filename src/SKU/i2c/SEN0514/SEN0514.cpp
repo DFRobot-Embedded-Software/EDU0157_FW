@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0514.h"
-
+extern uint8_t es160Com;
 static DFRobot_ENS160_I2C *getDFRobot_ENS160(uint8_t ifn){
     DFRobot_ENS160_I2C *es160 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_ENS160_I2C *getDFRobot_ENS160(uint8_t ifn){
         default:
               return NULL;
     }
+    es160Com = ifn;
     return es160;
 }
 

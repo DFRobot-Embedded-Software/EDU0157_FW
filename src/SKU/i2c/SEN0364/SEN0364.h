@@ -13,7 +13,7 @@
 #define SEN0364_H
 
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_AS7341.h"
 /**
  * @fn SEN0364_SETUP

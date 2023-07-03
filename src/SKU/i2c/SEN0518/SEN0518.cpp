@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0518.h"
-
+extern uint8_t MAX30102Com;
 static DFRobot_BloodOxygen_S_I2C *getDFRobot_SEN0518(uint8_t ifn){
     DFRobot_BloodOxygen_S_I2C *MAX30102 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_BloodOxygen_S_I2C *getDFRobot_SEN0518(uint8_t ifn){
         default:
               return NULL;
     }
+    MAX30102Com = ifn;
     return MAX30102;
 }
 

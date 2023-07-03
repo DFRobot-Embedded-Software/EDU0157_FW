@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0322.h"
-
+extern uint8_t oxygenCom;
 static DFRobot_OxygenSensor *getDFRobot_Oxygen(uint8_t ifn){
     DFRobot_OxygenSensor *oxygen = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_OxygenSensor *getDFRobot_Oxygen(uint8_t ifn){
         default:
               return NULL;
     }
+    oxygenCom = ifn;
     return oxygen;
 }
 
@@ -33,7 +34,6 @@ struct sensorAttr* SEN0322_SETUP(uint8_t ifn, uint8_t address){
     struct keyValue* tail = NULL;
 
     if(oxygen == NULL) return NULL;
-    
     if(oxygen->begin(address) != true) return NULL; 
     attr = new  sensorAttr;
     if(attr == NULL) return NULL;

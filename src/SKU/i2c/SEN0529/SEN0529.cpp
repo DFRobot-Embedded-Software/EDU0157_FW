@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0529.h"
-
+extern uint8_t bmm150Com;
 static DFRobot_BMM150_I2C *getDFRobot_BMM150(uint8_t ifn){
     DFRobot_BMM150_I2C *bmm150 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_BMM150_I2C *getDFRobot_BMM150(uint8_t ifn){
         default:
               return NULL;
     }
+    bmm150Com = ifn;
     return bmm150;
 }
 

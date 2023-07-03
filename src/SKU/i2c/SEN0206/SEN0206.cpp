@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0206.h"
-
+extern uint8_t mlx90614Com;
 static DFRobot_MLX90614_I2C *getDFRobot_SEN0206(uint8_t ifn){
     DFRobot_MLX90614_I2C *mlx90614 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_MLX90614_I2C *getDFRobot_SEN0206(uint8_t ifn){
         default:
               return NULL;
     }
+    mlx90614Com = ifn;
     return mlx90614;
 }
 

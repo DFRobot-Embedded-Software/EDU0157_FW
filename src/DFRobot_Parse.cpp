@@ -13,11 +13,12 @@
 //  */
 #include "DFRobot_Parse.h"
 #include <Arduino.h>
-#include "global.h"
+#include "DFRobot_PCF8563T.h"
+extern sGeneral_t *pGeneral;
 
 uint8_t getVersion(pCmdPacktet_t pkt){
   if(pkt->cmd != CMD_GET_VERSION){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
   uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 + 2];
@@ -35,13 +36,14 @@ uint8_t getVersion(pCmdPacktet_t pkt){
 uint8_t getData(pCmdPacktet_t pkt)
 {
   if(pkt->cmd != CMD_GET_DATA){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
   char key[pkt->len + 1];
   memcpy(key, pkt->data, pkt->len);
   key[pkt->len] = '\0';
   String sensor = getAllValue(key);
+  
   uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 + sensor.length()];
   memset(sendData, 0, sizeof(sendData));
   sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
@@ -56,27 +58,23 @@ uint8_t getData(pCmdPacktet_t pkt)
 extern struct I2CSensorInfo *I2C_SENSOR_INFO_HEAD;
 extern float wSpeed;
 extern String timeData;
-extern float voltage;
-extern float percentage;
+extern String widDir;
+// extern float voltage;
+// extern float percentage;
 String getAllValue(const char *key){
   String sensor = "";
   struct I2CSensorInfo *p = I2C_SENSOR_INFO_HEAD;
-  if(String(key) == "speed"){
-    sensor = String(wSpeed/100.0);
-    return sensor;
-  }else if(String(key) == "dir"){
-    sensor = getCompassData();
-    return sensor;
-  }else if(String(key) == "time"){
-    sensor = timeData;
-    return sensor;
-  }else if(String(key) == "Voltage"){
-    sensor = String(voltage);
-    return sensor;
-  }else if(String(key) == "Percentage"){
-    sensor = String(percentage);
+  if(String(key) == "Speed"){
+    sensor = String(wSpeed,1);
     return sensor;
   }
+  else if(String(key) == "Dir"){
+    sensor = widDir;
+    return sensor;
+  }else if(String(key) == "Time"){
+    sensor = timeData;
+    return sensor;
+  }           
   while(p){
     if(p->attr && p->attr->attr){
       struct keyValue *pkey = p->attr->attr;
@@ -96,7 +94,7 @@ String getAllValue(const char *key){
 uint8_t getUint(pCmdPacktet_t pkt)
 {
   if(pkt->cmd != CMD_GET_UNIT){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
   char key[pkt->len + 1];
@@ -117,14 +115,8 @@ uint8_t getUint(pCmdPacktet_t pkt)
 String getAllUint(const char *key){
   String sensor = "";
   struct I2CSensorInfo *p = I2C_SENSOR_INFO_HEAD;
-  if(String(key) == "speed"){
+  if(String(key) == "Speed"){
     sensor = "m/s";
-    return sensor;
-  }else if(String(key) == "Voltage"){
-    sensor = "mV";
-    return sensor;
-  }else if(String(key) == "Percentage"){
-    sensor = "%";
     return sensor;
   }
   while(p){
@@ -146,7 +138,7 @@ String getAllUint(const char *key){
 uint8_t getALLData(pCmdPacktet_t pkt)
 {
   if(pkt->cmd != CMD_GET_ALL_DATA){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
   String sensor = combinationAllValue(pkt);
@@ -161,8 +153,8 @@ uint8_t getALLData(pCmdPacktet_t pkt)
   return ERR_CODE_NONE;
 }
 extern float wSpeed;
-extern float voltage;
-extern float percentage;
+// extern float voltage;
+// extern float percentage;
 String combinationAllValue(pCmdPacktet_t key){
   String sensor = "";
   struct I2CSensorInfo *p = I2C_SENSOR_INFO_HEAD;
@@ -171,16 +163,10 @@ String combinationAllValue(pCmdPacktet_t key){
     sensor += ", ";
   }
   sensor += "WindSpeed:";
-  sensor += String(wSpeed/100.0);
+  sensor += String(wSpeed,1);
   sensor += " m/s, ";
   sensor += "WindDirection:";
-  sensor += getCompassData();
-  sensor += ", Voltage:";
-  sensor += String(voltage);
-  sensor += " mV, ";
-  sensor += "Percentage:";
-  sensor += String(percentage);
-  sensor += " %";
+  sensor += widDir;
 
   while(p){
     if(p->attr && p->attr->attr){
@@ -199,28 +185,30 @@ String combinationAllValue(pCmdPacktet_t key){
   }
   return sensor;
 }
-extern DFRobot_PCF8563T rtc;
+extern sPCF8563TTime_t rtt;
 uint8_t set_Time(pCmdPacktet_t pkt)
 {
   if(pkt->cmd != CMD_SET_TIME){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
-  uint16_t year = pkt->data[0] + 2000;
-  uint8_t month = pkt->data[1];
-  uint8_t day = pkt->data[2];
-  uint8_t week = pkt->data[3];
-  uint8_t hour = pkt->data[4];
-  uint8_t minute = pkt->data[5];
-  uint8_t second = pkt->data[6];
-  GLOBAL_DBG(year);
-  GLOBAL_DBG(month);
-  GLOBAL_DBG(day);
-  GLOBAL_DBG(week);
-  GLOBAL_DBG(hour);
-  GLOBAL_DBG(minute);
-  GLOBAL_DBG(second);
-  rtc.begin(year,month,day,week,hour,minute,second);
+  rtt.year = pkt->data[0] + 2000;
+  rtt.month = pkt->data[1];
+  rtt.day = pkt->data[2];
+  rtt.week = pkt->data[3];
+  rtt.hour = pkt->data[4];
+  rtt.minute = pkt->data[5];
+  rtt.second = pkt->data[6];
+  pGeneral->timeConfig = ON;
+  ENABLE_PARSE_DBG(rtt.year);
+  ENABLE_PARSE_DBG(rtt.month);
+  ENABLE_PARSE_DBG(rtt.day);
+  ENABLE_PARSE_DBG(rtt.week);
+  ENABLE_PARSE_DBG(rtt.hour);
+  ENABLE_PARSE_DBG(rtt.minute);
+  ENABLE_PARSE_DBG(rtt.second);
+  PCF8563T_1.setTime(rtt);
+  //PCF8563T_1.begin(year,month,day,week,hour,minute,second);
   uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 ];
   sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
   sendData[RESPONSE_CMD]    =  CMD_SET_TIME;
@@ -232,7 +220,7 @@ uint8_t set_Time(pCmdPacktet_t pkt)
 
 uint8_t getTime(pCmdPacktet_t pkt){
   if(pkt->cmd != CME_GET_TIME){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
   String sensor = timeData;
@@ -251,10 +239,158 @@ uint8_t getTime(pCmdPacktet_t pkt){
 extern pSendPacktet_t sendBufferPtr;
 uint8_t resetData(pCmdPacktet_t pkt){
   if(pkt->cmd != CMD_RESET_DATA){
-    GLOBAL_DBG("invaild command!");
+    ENABLE_PARSE_DBG("invaild command!");
     return ERR_CODE_CMD_PKT;
   }
-  Serial.println("resetData");
+  //Serial.println("resetData");
   sendBufferPtr->index = 0;
+  return ERR_CODE_NONE;
+}
+
+void DFRobot_Response(uint8_t *data, uint8_t len){
+  (pGeneral->sCommunicationMode == I2C)? i2cSend(data, len):uartSend(data,len);
+}
+
+void i2cSend(uint8_t *data, uint16_t len){
+  if(sendBufferPtr->flag){
+    sendBufferPtr->flag = false;
+  }
+
+  if(len <= 4096){
+    memset(sendBufferPtr->data, 0, 4069);
+    memcpy(sendBufferPtr->data, data, len);
+    sendBufferPtr->index = 0;
+    sendBufferPtr->total = len;
+    sendBufferPtr->flag = true;
+  }
+}
+
+void uartSend(uint8_t *data, uint16_t len){
+  uint8_t* pBuf = data;
+  int f =0;
+  for(int i = 0; i < len; i++){
+    Serial1.write(pBuf[i]);
+    f++;
+    delay(10);
+  }
+  ENABLE_PARSE_DBG(f);
+}
+
+uint8_t setRadius(pCmdPacktet_t pkt){
+  uint8_t buf[2];
+  uint16_t data = 0;
+  
+  if(pkt->cmd != CMD_RADIUS_DATA){
+    ENABLE_PARSE_DBG("invaild command!");
+    return ERR_CODE_CMD_PKT;
+  }
+  memcpy(buf,pkt->data,2);
+  writeRadius(buf);
+  data = (buf[0] << 8 | buf[1]);
+  pGeneral->sRadial = (float)data/100.0;
+  ENABLE_PARSE_DBG(pGeneral->sRadial);
+  uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 ];
+  sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
+  sendData[RESPONSE_CMD]    =  CMD_RADIUS_DATA;
+  sendData[RESPONSE_LEN_L]  =  0;
+  sendData[RESPONSE_LEN_H]  =  0; 
+  DFRobot_Response(sendData, sizeof(sendData));
+  return ERR_CODE_NONE;
+}
+
+uint8_t setStandaraWindSpeed1(pCmdPacktet_t pkt){
+  uint16_t data= 0;
+  uint8_t buf[2];
+  if(pkt->cmd != CMD_SPEED1_DATA){
+    ENABLE_PARSE_DBG("invaild command!");
+    return ERR_CODE_CMD_PKT;
+  }
+  memcpy(buf,pkt->data,2);
+  writeStand1(buf);
+  data = buf[0] << 8 | buf[1];
+  pGeneral->sStandWindSpeed1 = (float)data / 100.0;
+  ENABLE_PARSE_DBG(pGeneral->sStandWindSpeed1);
+  pGeneral->sWindFlage = 1;
+  uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 ];
+  sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
+  sendData[RESPONSE_CMD]    =  CMD_SPEED1_DATA;
+  sendData[RESPONSE_LEN_L]  =  0;
+  sendData[RESPONSE_LEN_H]  =  0; 
+  DFRobot_Response(sendData, sizeof(sendData));
+  return ERR_CODE_NONE;
+}
+
+uint8_t setStandaraWindSpeed2(pCmdPacktet_t pkt){
+  uint16_t data= 0;
+  if(pkt->cmd != CMD_SPEED2_DATA){
+    ENABLE_PARSE_DBG("invaild command!");
+    return ERR_CODE_CMD_PKT;
+  }
+  data = pkt->data[0] << 8 | pkt->data[1];
+  pGeneral->sStandWindSpeed2 = (float)data / 100.0;
+  ENABLE_PARSE_DBG(pGeneral->sStandWindSpeed2);
+  pGeneral->sWindFlage = 2;
+  uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 ];
+  sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
+  sendData[RESPONSE_CMD]    =  CMD_SPEED2_DATA;
+  sendData[RESPONSE_LEN_L]  =  0;
+  sendData[RESPONSE_LEN_H]  =  0; 
+  DFRobot_Response(sendData, sizeof(sendData));
+  return ERR_CODE_NONE;
+}
+
+uint8_t calibrator(pCmdPacktet_t pkt){
+  String str="";
+  if(pkt->cmd != CMD_CALIBRATOR){
+    ENABLE_PARSE_DBG("invaild command!");
+    return ERR_CODE_CMD_PKT;
+  }
+  ENABLE_PARSE_DBG(pGeneral->sAtPresentSpeed2);
+  ENABLE_PARSE_DBG(pGeneral->sAtPresentSpeed1);
+  if((pGeneral->sAtPresentSpeed2 == 0) || (pGeneral->sAtPresentSpeed1 == 0)){
+    str += "error";
+    pGeneral->sLinearFactor = 1;
+    pGeneral->sOffset = 0;
+    writeData(pGeneral->sOffset,pGeneral->sLinearFactor);
+  }else{
+    pGeneral->sLinearFactor = (pGeneral->sStandWindSpeed2 - pGeneral->sStandWindSpeed1) / (pGeneral->sAtPresentSpeed2 - pGeneral->sAtPresentSpeed1);
+    pGeneral->sOffset = (pGeneral->sStandWindSpeed2 - (pGeneral->sAtPresentSpeed2 * pGeneral->sLinearFactor))/pGeneral->sLinearFactor;
+    writeData(pGeneral->sOffset,pGeneral->sLinearFactor);
+    ENABLE_PARSE_DBG(pGeneral->sLinearFactor);
+    ENABLE_PARSE_DBG(pGeneral->sOffset);
+    str += "K: ";
+    str += String(pGeneral->sLinearFactor);
+    str += " ";
+    str += "B: ";
+    str += String(pGeneral->sOffset);
+    str += " ";
+    str += "speed1: ";
+    str += String(pGeneral->sAtPresentSpeed1);
+    str += " ";
+    str += "speed2: ";
+    str += String(pGeneral->sAtPresentSpeed2);
+
+  }
+  
+  uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 + str.length()];
+  sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
+  sendData[RESPONSE_CMD]    =  CMD_CALIBRATOR;
+  sendData[RESPONSE_LEN_L]  =  str.length() & 0xFF;
+  sendData[RESPONSE_LEN_H]  =  (str.length() >> 8) & 0xFF;
+  memcpy(sendData + 4, str.c_str(), str.length());
+  DFRobot_Response(sendData, sizeof(sendData));
+  return ERR_CODE_NONE;
+}
+
+uint8_t project(pCmdPacktet_t pkt){
+  pGeneral->sSampleRate = 1;
+  pGeneral->sUnit = SECOND;
+  PCF8563T_1.setCountDown();
+  uint8_t sendData[RESPONSE_ERR_PKT_LEN - 1 ];
+  sendData[RESPONSE_STATUS] =  STATUS_SUCCESS;
+  sendData[RESPONSE_CMD]    =  CMD_PROJECT;
+  sendData[RESPONSE_LEN_L]  =  0;
+  sendData[RESPONSE_LEN_H]  =  0; 
+  DFRobot_Response(sendData, sizeof(sendData));
   return ERR_CODE_NONE;
 }

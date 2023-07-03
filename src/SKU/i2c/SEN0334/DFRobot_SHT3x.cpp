@@ -12,9 +12,19 @@
 
 #include "DFRobot_SHT3x.h"
 #include"math.h"
+uint8_t sht3xCom = 1;
 DFRobot_SHT3x::DFRobot_SHT3x(SoftwareTwoWire *pWire, uint8_t address,uint8_t RST)
 {
   _pWire = pWire;
+  _address = address;
+  _RST = RST;
+  measurementMode = eOneShot;
+  pinMode(_RST,OUTPUT);
+  digitalWrite(_RST,HIGH);
+}
+DFRobot_SHT3x::DFRobot_SHT3x(TwoWire *pWire, uint8_t address,uint8_t RST)
+{
+  _pWire1 = pWire;
   _address = address;
   _RST = RST;
   measurementMode = eOneShot;
@@ -26,7 +36,7 @@ int DFRobot_SHT3x::begin()
 {
   if(readSerialNumber() == 0){
     DBG("bus data access error");
-    return ERR_DATA_BUS;
+    return ERR_DATA_BUS2;
    }
   return ERR_OK;
 }
@@ -579,11 +589,20 @@ void DFRobot_SHT3x::write(const void* pBuf,size_t size)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
-  _pWire->beginTransmission(_address);
-  for (uint8_t i = 0; i < size; i++) {
-    _pWire->write(_pBuf[i]);
+  if(sht3xCom == 1){
+    _pWire->beginTransmission(_address);
+    for (uint8_t i = 0; i < size; i++) {
+      _pWire->write(_pBuf[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_address);
+    for (uint8_t i = 0; i < size; i++) {
+      _pWire1->write(_pBuf[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 uint8_t DFRobot_SHT3x::readData(void *pBuf, size_t size) {
@@ -591,16 +610,23 @@ uint8_t DFRobot_SHT3x::readData(void *pBuf, size_t size) {
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
-
-  _pWire->requestFrom(_address,size);
   uint8_t len = 0;
-  for (uint8_t i = 0 ; i < size; i++) {
-    _pBuf[i] = _pWire->read();
-    len++;
+  if(sht3xCom == 1){
+    _pWire->requestFrom(_address,size);
+    for (uint8_t i = 0 ; i < size; i++) {
+      _pBuf[i] = _pWire->read();
+      len++;
+    }
+  }else{
+    _pWire1->requestFrom(_address,size);
+    for (uint8_t i = 0 ; i < size; i++) {
+      _pBuf[i] = _pWire1->read();
+      len++;
+    }
   }
 
   return len;
 }
 
-DFRobot_SHT3x SHT3x_1(&SOF_WIRE1, 0x45);
-DFRobot_SHT3x SHT3x_2(&SOF_WIRE2, 0x45);
+DFRobot_SHT3x SHT3x_1(&SOF_WIRE1, 0x45,4);
+DFRobot_SHT3x SHT3x_2(&Wire1, 0x45,4);

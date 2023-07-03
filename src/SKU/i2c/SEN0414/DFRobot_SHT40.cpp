@@ -34,6 +34,28 @@ DFRobot_SHT(addr, pWire, deviceinit, this)
 
 }
 
+DFRobot_SHT40::DFRobot_SHT40(uint8_t addr, TwoWire *pWire):
+DFRobot_SHT(addr, pWire, deviceinit, this)
+{
+  deviceinit[SHT_CONFIG_ID].addr = COM_READ_SERIAL;
+  deviceinit[SHT_CONFIG_SOFT_RESET].addr = COM_SOFT_RESET;
+  deviceinit[SHT_CONFIG_MODE].addr = 0;
+  deviceinit[SHT_CALCULATE_HUM].addr = 0;
+  deviceinit[SHT_CALCULATE_TEM].addr = 0;
+  deviceinit[SHT_CONFIG_ID].len = 1;
+  deviceinit[SHT_CONFIG_SOFT_RESET].len = 1;
+  deviceinit[SHT_CONFIG_MODE].len  = 1;
+  deviceinit[SHT_CALCULATE_HUM].len  = 1;
+  deviceinit[SHT_CALCULATE_TEM].len = 1;
+  deviceinit[SHT_CONFIG_ID].fun = (void(*)(...))&DFRobot_SHT40::getDeviceIDCB;
+  deviceinit[SHT_CONFIG_SOFT_RESET].fun = (void(*)(...))&DFRobot_SHT40::softwareResetCB;
+  deviceinit[SHT_CONFIG_MODE].fun = (void (*)(...))&DFRobot_SHT40::setModeCB;
+  deviceinit[SHT_CALCULATE_HUM].fun = (void (*)(...))&DFRobot_SHT40::getHumValueCB;
+  deviceinit[SHT_CALCULATE_TEM].fun = (void (*)(...))&DFRobot_SHT40::getTemValueCB;
+
+
+}
+
 void DFRobot_SHT40::begin()
 {
   DFRobot_SHT::begin();

@@ -11,6 +11,7 @@
  */
 
 #include "DFRobot_VEML7700.h"
+uint8_t veml7700Com = 0;
 
 DFRobot_VEML7700::DFRobot_VEML7700()
  :_pWire(NULL){
@@ -18,6 +19,10 @@ DFRobot_VEML7700::DFRobot_VEML7700()
 
 DFRobot_VEML7700::DFRobot_VEML7700(SoftwareTwoWire *pWire, uint8_t addr)
  :_pWire(pWire), _addr(addr){
+
+}
+DFRobot_VEML7700::DFRobot_VEML7700(TwoWire *pWire, uint8_t addr)
+ :_pWire1(pWire), _addr(addr){
 
 }
 
@@ -65,36 +70,68 @@ void DFRobot_VEML7700::begin(uint8_t als_gain)
 
 uint8_t DFRobot_VEML7700::sendData(uint8_t command, uint32_t data)
 {
-  _pWire->beginTransmission(I2C_ADDRESS);
-  if (_pWire->write(command) != 1){
-    return STATUS_ERROR;
-  }
-  if (_pWire->write(uint8_t(data & 0xff)) != 1){
-    return STATUS_ERROR;
-  }
-  if (_pWire->write(uint8_t(data >> 8)) != 1){
-    return STATUS_ERROR;
-  }
-  if (_pWire->endTransmission()){
-    return STATUS_ERROR;
+  if(veml7700Com == 1){
+    _pWire->beginTransmission(I2C_ADDRESS);
+    if (_pWire->write(command) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire->write(uint8_t(data & 0xff)) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire->write(uint8_t(data >> 8)) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire->endTransmission()){
+      return STATUS_ERROR;
+    }
+  }else{
+    _pWire1->beginTransmission(I2C_ADDRESS);
+    if (_pWire1->write(command) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire1->write(uint8_t(data & 0xff)) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire1->write(uint8_t(data >> 8)) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire1->endTransmission()){
+      return STATUS_ERROR;
+    }
   }
   return STATUS_OK;
 }
 
 uint8_t DFRobot_VEML7700::receiveData(uint8_t command, uint32_t& data)
 {
-  _pWire->beginTransmission(I2C_ADDRESS);
-  if (_pWire->write(command) != 1){
-    return STATUS_ERROR;
+  if(veml7700Com == 1){
+    _pWire->beginTransmission(I2C_ADDRESS);
+    if (_pWire->write(command) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire->endTransmission(false)){  // NB: don't send stop here
+      return STATUS_ERROR;
+    }
+    if (_pWire->requestFrom(uint8_t(I2C_ADDRESS), uint8_t(2)) != 2){
+      return STATUS_ERROR;
+    }
+    data = _pWire->read();
+    data |= uint32_t(_pWire->read()) << 8;
+  }else{
+    _pWire1->beginTransmission(I2C_ADDRESS);
+    if (_pWire1->write(command) != 1){
+      return STATUS_ERROR;
+    }
+    if (_pWire1->endTransmission(false)){  // NB: don't send stop here
+      return STATUS_ERROR;
+    }
+    if (_pWire1->requestFrom(uint8_t(I2C_ADDRESS), uint8_t(2)) != 2){
+      return STATUS_ERROR;
+    }
+    data = _pWire1->read();
+    data |= uint32_t(_pWire1->read()) << 8;
   }
-  if (_pWire->endTransmission(false)){  // NB: don't send stop here
-    return STATUS_ERROR;
-  }
-  if (_pWire->requestFrom(uint8_t(I2C_ADDRESS), uint8_t(2)) != 2){
-    return STATUS_ERROR;
-  }
-  data = _pWire->read();
-  data |= uint32_t(_pWire->read()) << 8;
+  
   return STATUS_OK;
 }
 
@@ -463,4 +500,4 @@ void DFRobot_VEML7700::sampleDelay()
 }
 
 DFRobot_VEML7700 VEML7700_1(&SOF_WIRE1, 0x10);
-DFRobot_VEML7700 VEML7700_2(&SOF_WIRE2, 0x10);
+DFRobot_VEML7700 VEML7700_2(&Wire1, 0x10);

@@ -12,7 +12,7 @@
 #ifndef SEN0321_H
 #define SEN0321_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_OzoneSensor.h"
 /**
  * @fn SEN0321_SETUP

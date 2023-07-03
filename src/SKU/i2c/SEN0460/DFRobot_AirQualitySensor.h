@@ -13,12 +13,12 @@
 #define __DFR0bot_AIR_H__
 
 #include "Arduino.h"
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 // Open this macro to see the program running in detail
 //#define ENABLE_DBG
 
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG6
 #define DBG(...)                     \
     {                                \
         Serial.print("[");           \
@@ -51,7 +51,8 @@
 class DFRobot_AirQualitySensor
 {
   public:
-    DFRobot_AirQualitySensor(SoftwareTwoWire *pWire, uint8_t addr = 0x19);
+    DFRobot_AirQualitySensor(SoftwareTwoWire *pWire, uint8_t addr);
+    DFRobot_AirQualitySensor(TwoWire *pWire, uint8_t addr);
     ~DFRobot_AirQualitySensor(void){};
     /**
      * @fn begin
@@ -136,6 +137,7 @@ class DFRobot_AirQualitySensor
 
   private:
     SoftwareTwoWire *_pWire;
+    TwoWire *_pWire1;
     uint8_t _I2C_addr;
 };
 

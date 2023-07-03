@@ -13,7 +13,7 @@
 #define SEN0322_H
 
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_OxygenSensor.h"
 /**
  * @fn SEN0322_SETUP

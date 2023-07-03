@@ -12,7 +12,7 @@
 #ifndef SEN0460_H
 #define SEN0460_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_AirQualitySensor.h"
 /**
  * @fn SEN0529_SETUP

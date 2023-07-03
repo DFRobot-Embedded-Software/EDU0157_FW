@@ -12,7 +12,7 @@
 #define __DFRobot_GNSS_H__
 
 #include <Arduino.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 #if defined(ARDUINO_AVR_UNO) || defined(ESP8266)
 #include "SoftwareSerial.h"
@@ -287,13 +287,15 @@ private:
 
 class DFRobot_GNSS_I2C:public DFRobot_GNSS{
 public:
-  DFRobot_GNSS_I2C(SoftwareTwoWire *pWire, uint8_t addr = 0x20);
+  DFRobot_GNSS_I2C(SoftwareTwoWire *pWire, uint8_t addr );
+  DFRobot_GNSS_I2C(TwoWire *pWire, uint8_t addr );
   bool begin(uint8_t i2cAddr);
 protected:
   virtual void writeReg(uint8_t reg, uint8_t *data, uint8_t len);
   virtual int16_t readReg(uint8_t reg, uint8_t *data, uint8_t len);
 private:
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _I2C_addr;
 };
 

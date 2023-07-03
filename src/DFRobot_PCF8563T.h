@@ -15,7 +15,9 @@
 
 #include <Wire.h>
 #include <Arduino.h>
-#include "software_iic.h"
+#include "general.h"
+#include "./SKU/software_iic.h"
+
 
 /**
  * @struct sPCF8563TTime_t
@@ -29,7 +31,8 @@ typedef struct{
     uint8_t week;   ///< 周，  范围0~6
     uint8_t month;  ///< 月，  范围1~12
     uint16_t year;  ///< 年，  大于2000
-}sPCF8563TTime_t, *pPCF8563TTime_t;
+}sPCF8563TTime_t;
+
 
 class DFRobot_PCF8563T{
 public:
@@ -41,7 +44,8 @@ public:
    * @param addr  时钟模块的I2C地址，为0x51
    */
   //DFRobot_PCF8563T(SoftwareTwoWire *pWire = &SOF_WIRE1, uint8_t addr = 0x51);
-  DFRobot_PCF8563T(TwoWire *pWire = &Wire1, uint8_t addr = 0x51);
+  DFRobot_PCF8563T(SoftwareTwoWire *pWire , uint8_t addr );
+  //DFRobot_PCF8563T(TwoWire *pWire , uint8_t addr);
   /**
    * @fn begin
    * @brief 设置电脑的时间到时钟模块
@@ -94,6 +98,14 @@ public:
    * @n 6   星期六
    */
   uint8_t dayOfTheWeek(uint16_t year, uint8_t month, uint8_t day);
+
+  void rtc_setup(void);
+  sPCF8563TTime_t get_rtc(void);
+  String getHourMinuteSecond(void);
+  String convertHourMinuteSecond(sPCF8563TTime_t t);
+  char* convertDataFileName(sPCF8563TTime_t t);
+  void setCountDown(void);
+  void cleanState(void);
 protected:
   /**
    * @fn writeReg
@@ -149,10 +161,14 @@ protected:
    * @return uint8_t 返回十进制数据的BCD码表示
    */
   uint8_t decToBCD(uint8_t num);
+
 private:
-  TwoWire *_pWire;
+  SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _addr;
   sPCF8563TTime_t _t;
 };
+extern DFRobot_PCF8563T PCF8563T_1;
+//extern DFRobot_PCF8563T PCF8563T_2;
 
 #endif

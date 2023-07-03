@@ -12,7 +12,7 @@
 #ifndef SEN0304_H
 #define SEN0304_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_URM09.h"
 /**
  * @fn SEN0304_SETUP

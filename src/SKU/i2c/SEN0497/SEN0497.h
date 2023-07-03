@@ -12,7 +12,7 @@
 #ifndef SEN0497_H
 #define SEN0497_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_DHT20.h"
 /**
  * @fn SEN0497

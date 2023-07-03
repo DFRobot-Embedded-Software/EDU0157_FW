@@ -30,6 +30,8 @@
 #include "i2c/SEN0536/SEN0536.h"
 #include "i2c/SEN0414/SEN0414.h"
 #include "i2c/TEL0157/TEL0157.h"
+#include "i2c/MAX17043/MAX17043.h"
+// #include "i2c/PCF8563T/PCF8563T.h"
 
 //#include "uart/SEN0161.h"
 

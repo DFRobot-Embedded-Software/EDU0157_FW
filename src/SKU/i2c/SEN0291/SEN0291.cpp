@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0291.h"
-
+extern uint8_t ina219Com;
 static DFRobot_INA219_IIC *getDFRobot_INA219(uint8_t ifn){
     DFRobot_INA219_IIC *ina219 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_INA219_IIC *getDFRobot_INA219(uint8_t ifn){
         default:
               return NULL;
     }
+    ina219Com = ifn;
     return ina219;
 }
 

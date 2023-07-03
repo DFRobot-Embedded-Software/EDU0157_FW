@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0364.h"
-
+extern uint8_t as7341Com;
 static DFRobot_AS7341 *getDFRobot_SEN0364(uint8_t ifn){
     DFRobot_AS7341 *as7341 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_AS7341 *getDFRobot_SEN0364(uint8_t ifn){
         default:
               return NULL;
     }
+    as7341Com = ifn;
     return as7341;
 }
 

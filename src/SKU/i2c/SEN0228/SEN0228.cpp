@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0228.h"
-
+extern uint8_t veml7700Com;
 static DFRobot_VEML7700 *getDFRobot_VEML7700(uint8_t ifn){
     DFRobot_VEML7700 *veml = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_VEML7700 *getDFRobot_VEML7700(uint8_t ifn){
         default:
               return NULL;
     }
+    veml7700Com = ifn;
     return veml;
 }
 

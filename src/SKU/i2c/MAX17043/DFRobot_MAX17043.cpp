@@ -10,8 +10,14 @@
  */
 
 #include "DFRobot_MAX17043.h"
+uint8_t max17043Com = 0;
 
-DFRobot_MAX17043::DFRobot_MAX17043() {
+DFRobot_MAX17043::DFRobot_MAX17043(SoftwareTwoWire *pWire) {
+  _pWirt1 = pWire;
+
+}
+DFRobot_MAX17043::DFRobot_MAX17043(TwoWire *pWire){
+  _pWirt2 = pWire;
 }
 
 int DFRobot_MAX17043::begin()
@@ -23,7 +29,6 @@ int DFRobot_MAX17043::begin()
   if(read16(MAX17043_CONFIG) == 0x971c) {  //default 0x971c
     write16(MAX17043_MODE, 0x4000);  //quick start
     write16(MAX17043_CONFIG, 0x9700);
-    delay(100);
     return 0;
   }
   return -1;
@@ -65,3 +70,6 @@ void DFRobot_MAX17043::setWakeUp()
 {
   writeRegBits(MAX17043_CONFIG, 0, 0x01, 7);
 }
+
+DFRobot_MAX17043 MAX17043_1(&SOF_WIRE1);
+DFRobot_MAX17043 MAX17043_2(&Wire1);

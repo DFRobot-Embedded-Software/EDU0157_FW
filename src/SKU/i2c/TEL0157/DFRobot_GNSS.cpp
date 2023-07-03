@@ -9,7 +9,7 @@
  * @url https://github.com/DFRobot/DFRobot_GNSS
  */
 #include "DFRobot_GNSS.h"
-
+uint8_t gnssCom = 0;
 DFRobot_GNSS::DFRobot_GNSS(){}
 DFRobot_GNSS::~DFRobot_GNSS(){}
 
@@ -243,41 +243,80 @@ DFRobot_GNSS_I2C::DFRobot_GNSS_I2C(SoftwareTwoWire *pWire, uint8_t addr)
   this->_I2C_addr = addr;
   uartI2CFlag = I2C_FLAG;
 }
+DFRobot_GNSS_I2C::DFRobot_GNSS_I2C(TwoWire *pWire, uint8_t addr)
+{
+  _pWire1 = pWire;
+  this->_I2C_addr = addr;
+  uartI2CFlag = I2C_FLAG;
+}
 
 bool DFRobot_GNSS_I2C::begin(uint8_t i2cAddr)
 {
   this->_I2C_addr = i2cAddr;
   // _pWire->begin();
-  _pWire->beginTransmission(_I2C_addr);
-  if(_pWire->endTransmission() == 0){
-    return true;
+  if(gnssCom == 1){
+    _pWire->beginTransmission(_I2C_addr);
+    if(_pWire->endTransmission() == 0){
+      return true;
+    }else{
+      return false;
+    }
   }else{
-    return false;
+    _pWire1->beginTransmission(_I2C_addr);
+    if(_pWire1->endTransmission() == 0){
+      return true;
+    }else{
+      return false;
+    }
   }
+
 }
 
 void DFRobot_GNSS_I2C::writeReg(uint8_t reg, uint8_t *data, uint8_t len)
 {
-  _pWire->beginTransmission(this->_I2C_addr);
-  _pWire->write(reg);
-  for(uint8_t i = 0; i < len; i++){
-    _pWire->write(data[i]);
+  if(gnssCom == 1){
+    _pWire->beginTransmission(this->_I2C_addr);
+    _pWire->write(reg);
+    for(uint8_t i = 0; i < len; i++){
+      _pWire->write(data[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(this->_I2C_addr);
+    _pWire1->write(reg);
+    for(uint8_t i = 0; i < len; i++){
+      _pWire1->write(data[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 int16_t DFRobot_GNSS_I2C::readReg(uint8_t reg,uint8_t *data,uint8_t len)
 {
   int i=0;
-  _pWire->beginTransmission(this->_I2C_addr);
-  _pWire->write(reg);
-  if(_pWire->endTransmission() != 0){
-    return -1;
+  if(gnssCom == 1){
+    _pWire->beginTransmission(this->_I2C_addr);
+    _pWire->write(reg);
+    if(_pWire->endTransmission() != 0){
+      return -1;
+    }
+    _pWire->requestFrom((uint8_t)this->_I2C_addr,(uint8_t)len);
+    while (_pWire->available()){
+      data[i++]=_pWire->read();
+    }
+  }else{
+    _pWire1->beginTransmission(this->_I2C_addr);
+    _pWire1->write(reg);
+    if(_pWire1->endTransmission() != 0){
+      return -1;
+    }
+    _pWire1->requestFrom((uint8_t)this->_I2C_addr,(uint8_t)len);
+    while (_pWire1->available()){
+      data[i++]=_pWire1->read();
+    }
   }
-  _pWire->requestFrom((uint8_t)this->_I2C_addr,(uint8_t)len);
-  while (_pWire->available()){
-    data[i++]=_pWire->read();
-  }
+
   return 0;
 }
 
@@ -356,4 +395,4 @@ int16_t DFRobot_GNSS_UART::readReg(uint8_t reg, uint8_t *data, uint8_t len)
 }
 
 DFRobot_GNSS_I2C GNSS_1(/*pWire = */&SOF_WIRE1, /*addr = */0x20);
-DFRobot_GNSS_I2C GNSS_2(/*pWire = */&SOF_WIRE2, /*addr = */0x20);
+DFRobot_GNSS_I2C GNSS_2(/*pWire = */&Wire1, /*addr = */0x20);

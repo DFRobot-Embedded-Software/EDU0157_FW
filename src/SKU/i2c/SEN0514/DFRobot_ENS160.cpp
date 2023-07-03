@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot/DFRobot_ENS160
  */
 #include "DFRobot_ENS160.h"
-
+uint8_t es160Com = 0;
 DFRobot_ENS160::DFRobot_ENS160()
 {
   misr = 0;   // Mirror of DATA_MISR (0 is hardware default)
@@ -21,15 +21,15 @@ int DFRobot_ENS160::begin(void)
   uint8_t idBuf[2];
   if(0 == readReg(ENS160_PART_ID_REG, idBuf, sizeof(idBuf)))   // Judge whether the data bus is successful
   {
-    DBG("ERR_DATA_BUS");
-    return ERR_DATA_BUS;
+    DBG("ERR_DATA_BUS1");
+    return ERR_DATA_BUS1;
   }
 
   DBG("real sensor id=");DBG(ENS160_CONCAT_BYTES(idBuf[1], idBuf[0]));
   if(ENS160_PART_ID != ENS160_CONCAT_BYTES(idBuf[1], idBuf[0]))   // Judge whether the chip version matches
   {
-    DBG("ERR_IC_VERSION");
-    return ERR_IC_VERSION;
+    DBG("ERR_IC_VERSION1");
+    return ERR_IC_VERSION1;
   }
   setPWRMode(ENS160_STANDARD_MODE);
   setINTMode(0x00);
@@ -120,6 +120,11 @@ DFRobot_ENS160_I2C::DFRobot_ENS160_I2C(SoftwareTwoWire *pWire, uint8_t i2cAddr)
   _deviceAddr = i2cAddr;
   _pWire = pWire;
 }
+DFRobot_ENS160_I2C::DFRobot_ENS160_I2C(TwoWire *pWire, uint8_t i2cAddr)
+{
+  _deviceAddr = i2cAddr;
+  _pWire1 = pWire;
+}
 
 int DFRobot_ENS160_I2C::begin(uint8_t addr)
 {
@@ -134,14 +139,24 @@ void DFRobot_ENS160_I2C::writeReg(uint8_t reg, const void* pBuf, size_t size)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
+  if(es160Com == 1){
+    _pWire->beginTransmission(_deviceAddr);
+    _pWire->write(reg);
 
-  _pWire->beginTransmission(_deviceAddr);
-  _pWire->write(reg);
+    for(size_t i = 0; i < size; i++) {
+      _pWire->write(_pBuf[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+    _pWire1->write(reg);
 
-  for(size_t i = 0; i < size; i++) {
-    _pWire->write(_pBuf[i]);
+    for(size_t i = 0; i < size; i++) {
+      _pWire1->write(_pBuf[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 size_t DFRobot_ENS160_I2C::readReg(uint8_t reg, void* pBuf, size_t size)
@@ -151,19 +166,34 @@ size_t DFRobot_ENS160_I2C::readReg(uint8_t reg, void* pBuf, size_t size)
     DBG("pBuf ERROR!! : null pointer");
   }
   uint8_t * _pBuf = (uint8_t*)pBuf;
-
-  _pWire->beginTransmission(_deviceAddr);
-  _pWire -> write(reg);
-  if(0 != _pWire->endTransmission()) {   // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
-    DBG("endTransmission ERROR!!");
-  } else {
-    _pWire->requestFrom(_deviceAddr, (uint8_t)size);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
-    
-    while (_pWire->available()) {
-      _pBuf[count++] = _pWire->read();   // Use read() to receive and put into buf
+  if(es160Com == 1){
+    _pWire->beginTransmission(_deviceAddr);
+    _pWire -> write(reg);
+    if(0 != _pWire->endTransmission()) {   // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
+      DBG("endTransmission ERROR!!");
+    } else {
+      _pWire->requestFrom(_deviceAddr, (uint8_t)size);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+      
+      while (_pWire->available()) {
+        _pBuf[count++] = _pWire->read();   // Use read() to receive and put into buf
+      }
+      // _pWire->endTransmission();
     }
-    // _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_deviceAddr);
+    _pWire1 -> write(reg);
+    if(0 != _pWire1->endTransmission()) {   // Used Wire.endTransmission() to end a slave transmission started by beginTransmission() and arranged by write().
+      DBG("endTransmission ERROR!!");
+    } else {
+      _pWire1->requestFrom(_deviceAddr, (uint8_t)size);   // Master device requests size bytes from slave device, which can be accepted by master device with read() or available()
+      
+      while (_pWire1->available()) {
+        _pBuf[count++] = _pWire1->read();   // Use read() to receive and put into buf
+      }
+      // _pWire->endTransmission();
+    }
   }
+
   return count;
 }
 
@@ -223,4 +253,4 @@ size_t DFRobot_ENS160_SPI::readReg(uint8_t reg, void* pBuf, size_t size)
 }
 
 DFRobot_ENS160_I2C ENS160_1(&SOF_WIRE1, 0x52);
-DFRobot_ENS160_I2C ENS160_2(&SOF_WIRE2, 0x52);
+DFRobot_ENS160_I2C ENS160_2(&Wire1, 0x52);

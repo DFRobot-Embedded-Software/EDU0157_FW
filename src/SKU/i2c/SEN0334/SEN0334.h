@@ -12,7 +12,7 @@
 #ifndef SEN0334_H
 #define SEN0334_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_SHT3x.h"
 /**
  * @fn SEN0334_SETUP

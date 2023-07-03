@@ -12,7 +12,7 @@
 #ifndef DFR0216_H
 #define DFR0216_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 /**
  * @fn DFR0216_SETUP
  * @brief DFR0216 传感器初始化

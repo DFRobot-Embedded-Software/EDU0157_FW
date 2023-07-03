@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0334.h"
-
+extern uint8_t sht3xCom;
 static DFRobot_SHT3x *getDFRobot_SHT3x(uint8_t ifn){
     DFRobot_SHT3x *sht3x = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_SHT3x *getDFRobot_SHT3x(uint8_t ifn){
         default:
               return NULL;
     }
+    sht3xCom = ifn;
     return sht3x;
 }
 

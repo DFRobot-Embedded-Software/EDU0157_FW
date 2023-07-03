@@ -6,51 +6,6 @@ struct sQueueData *cumsgBufTail=NULL;
 
 uint32_t queuedata = 0;
 
-void cuappEnqueue(uint8_t ok, uint8_t down, uint8_t back, uint8_t down_num,  uint8_t last_page){
-    struct sQueueData *p;
-    p = (struct sQueueData*)malloc(sizeof(struct sQueueData));
-    if(p == NULL){
-        return;
-    }
-    p->next   = NULL;
-    p->before = NULL;
-    if(cumsgBufHead==NULL){
-        cumsgBufHead=p;
-        cumsgBufTail=p;
-    }else{
-        cumsgBufTail->next = p;
-        p->before = cumsgBufTail;
-        cumsgBufTail = p;
-    }
-    p->ok = ok;
-    p->down = down;
-    p->back = back;
-    p->downNum = down_num;
-    p->isLastPage = last_page;
-    queuedata += 1;
-}
-
-struct sQueueData *cuappQueueTail( void ){
-    struct sQueueData *p;
-    p = cumsgBufTail;
-    if(cumsgBufTail != NULL){
-        cumsgBufTail = p->before;
-    }
-    return p;
-}
-
-struct sQueueData *getQueueTail(void){
-    struct sQueueData *p;
-    p = cumsgBufTail;
-    return p;
-}
-
-struct sQueueData *getQueueHead(void){
-    struct sQueueData *p;
-    p = cumsgBufHead;
-    return p;
-}
-
 
 pCmdPacktet_t i2cCumsgBufHead=NULL;
 //pCmdPacktet_t i2cCumsgBufTail=NULL;

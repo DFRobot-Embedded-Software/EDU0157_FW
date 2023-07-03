@@ -10,7 +10,10 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "TEL0157.h"
+extern sGeneral_t *pGeneral;
+extern uint8_t gnssCom;
 
+uint8_t k = 0;
 static DFRobot_GNSS_I2C *getDFRobot_GNSS_I2C(uint8_t ifn){
     DFRobot_GNSS_I2C *gnss = NULL;
     switch(ifn){
@@ -23,6 +26,7 @@ static DFRobot_GNSS_I2C *getDFRobot_GNSS_I2C(uint8_t ifn){
         default:
               return NULL;
     }
+    gnssCom = ifn;
     return gnss;
 }
 
@@ -77,12 +81,14 @@ struct sensorAttr* TEL0157_SETUP(uint8_t ifn, uint8_t address){
 void TEL0157_FUN(uint8_t ifn, struct keyValue* head){
     DFRobot_GNSS_I2C *gnss = getDFRobot_GNSS_I2C(ifn);
     uint8_t index = 0;
+    sLonLat_t lat;
+    sLonLat_t lon;
+    double high;
     if(gnss == NULL) return;
     if(head == NULL) return;
-
-    sLonLat_t lat = gnss->getLat();
-    sLonLat_t lon = gnss->getLon();
-    double high = gnss->getAlt();
+    lat = gnss->getLat();
+    lon = gnss->getLon();
+    high = gnss->getAlt();
   
     struct keyValue* p = head;
 

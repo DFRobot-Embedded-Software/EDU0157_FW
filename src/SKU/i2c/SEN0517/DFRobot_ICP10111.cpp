@@ -9,10 +9,15 @@
  * @url https://github.com/DFRobot/DFRobot_ICP10111
  */
 #include "DFRobot_ICP10111.h"
-
+uint8_t icpCom = 0;
 DFRobot_ICP10111::DFRobot_ICP10111(SoftwareTwoWire *pWire, uint8_t address)
 {
     _pWire   = pWire;
+    _address = address;
+}
+DFRobot_ICP10111::DFRobot_ICP10111(TwoWire *pWire, uint8_t address)
+{
+    _pWire1   = pWire;
     _address = address;
 }
 
@@ -146,14 +151,26 @@ void DFRobot_ICP10111::writeReg(uint16_t reg, void* pBuf, size_t size)
   regBuf[0] = reg >> 8;
   regBuf[1] = reg & 0xff;
   uint8_t * _pBuf = (uint8_t *)pBuf;
-  _pWire->beginTransmission(_address);
-  _pWire->write(&regBuf[0], 1);
-  _pWire->write(&regBuf[1], 1);
+  if(icpCom == 1){
+    _pWire->beginTransmission(_address);
+    _pWire->write(&regBuf[0], 1);
+    _pWire->write(&regBuf[1], 1);
 
-  for(uint16_t i = 0; i < size; i++){
-    _pWire->write(_pBuf[i]);
+    for(uint16_t i = 0; i < size; i++){
+      _pWire->write(_pBuf[i]);
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_address);
+    _pWire1->write(&regBuf[0], 1);
+    _pWire1->write(&regBuf[1], 1);
+
+    for(uint16_t i = 0; i < size; i++){
+      _pWire1->write(_pBuf[i]);
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 uint8_t DFRobot_ICP10111::readReg(uint16_t reg, void* pBuf, size_t size)
@@ -168,19 +185,33 @@ uint8_t DFRobot_ICP10111::readReg(uint16_t reg, void* pBuf, size_t size)
   DBG(regBuf[0],HEX);
   DBG(regBuf[1],HEX);
   uint8_t * _pBuf = (uint8_t *)pBuf;
-  _pWire->beginTransmission(_address);
-  _pWire->write(regBuf[0]);
-  _pWire->write(regBuf[1]);
-  if(_pWire->endTransmission() != 0)
-    return 1;
-  delay(100);
-  _pWire->requestFrom(_address, (uint8_t) size);
-  for(uint16_t i = 0; i < size; i++){
-    _pBuf[i] = _pWire->read();
+  if(icpCom == 1){
+    _pWire->beginTransmission(_address);
+    _pWire->write(regBuf[0]);
+    _pWire->write(regBuf[1]);
+    if(_pWire->endTransmission() != 0)
+      return 1;
+    delay(100);
+    _pWire->requestFrom(_address, (uint8_t) size);
+    for(uint16_t i = 0; i < size; i++){
+      _pBuf[i] = _pWire->read();
+    }
+  }else{
+    _pWire1->beginTransmission(_address);
+    _pWire1->write(regBuf[0]);
+    _pWire1->write(regBuf[1]);
+    if(_pWire1->endTransmission() != 0)
+      return 1;
+    delay(100);
+    _pWire1->requestFrom(_address, (uint8_t) size);
+    for(uint16_t i = 0; i < size; i++){
+      _pBuf[i] = _pWire1->read();
+    }
   }
+
   return 0;
 }
 
 
 DFRobot_ICP10111 ICP10111_1(&SOF_WIRE1, 0x63);
-DFRobot_ICP10111 ICP10111_2(&SOF_WIRE2, 0x63);
+DFRobot_ICP10111 ICP10111_2(&Wire1, 0x63);

@@ -13,11 +13,11 @@
 #define __DFRobot_SCD4X_H__
 
 #include <Arduino.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 
 // #define ENABLE_DBG   //!< Open this macro and you can see the details of the program
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG12
   #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
   #define DBG(...)
@@ -97,7 +97,8 @@ public:
    * @param i2cAddr - SCD4X I2C address.
    * @return None
    */
-  DFRobot_SCD4X(SoftwareTwoWire *pWire, uint8_t i2cAddr=SCD4X_I2C_ADDR);
+  DFRobot_SCD4X(SoftwareTwoWire *pWire, uint8_t i2cAddr);
+  DFRobot_SCD4X(TwoWire *pWire, uint8_t i2cAddr);
 
   /**
    * @fn begin
@@ -355,6 +356,7 @@ protected:
 private:
   // Private variables
   SoftwareTwoWire *_pWire;   // Pointer to I2C communication method
+  TwoWire *_pWire1;
   uint8_t _deviceAddr;   // Address of the device for I2C communication
 };
 

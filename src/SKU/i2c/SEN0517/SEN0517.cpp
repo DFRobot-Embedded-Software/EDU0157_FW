@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0517.h"
-
+extern uint8_t icpCom;
 static DFRobot_ICP10111 *getDFRobot_ICP10111(uint8_t ifn){
     DFRobot_ICP10111 *icp = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_ICP10111 *getDFRobot_ICP10111(uint8_t ifn){
         default:
               return NULL;
     }
+    icpCom = ifn;
     return icp;
 }
 
@@ -68,7 +69,7 @@ void SEN0517_FUN(uint8_t ifn, struct keyValue* head){
     if(head == NULL) return;
     float altitude = icp->getElevation();
     float pressure = icp->getAirPressure()/100.0;
-    float air      = icp->getTemperature();
+    //float air      = icp->getTemperature();
 
     struct keyValue* p = head;
 

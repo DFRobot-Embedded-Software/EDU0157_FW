@@ -16,10 +16,10 @@
 
 #include <Arduino.h>
 #include <string.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 //#define ENABLE_DBG
 
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG7
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
 #define DBG(...)
@@ -33,7 +33,8 @@ public:
    * @param pWire IC bus pointer object and construction device, can both pass or not pass parameters, Wire in default.
    * @param address Chip IIC address, 0x38 in default.
    */
-  DFRobot_DHT20(SoftwareTwoWire *pWire , uint8_t address = 0x38);
+  DFRobot_DHT20(SoftwareTwoWire *pWire , uint8_t address);
+  DFRobot_DHT20(TwoWire *pWire , uint8_t address);
   DFRobot_DHT20();
 
   /**
@@ -74,6 +75,7 @@ private:
     uint8_t  readData(void *pBuf,size_t size);   
     
     SoftwareTwoWire *_pWire;
+    TwoWire *_pWire1;
     uint8_t _address;
   
 };

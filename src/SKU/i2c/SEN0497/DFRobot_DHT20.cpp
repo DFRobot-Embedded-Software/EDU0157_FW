@@ -12,9 +12,13 @@
 
 #include "DFRobot_DHT20.h"
 
-
+uint8_t dht20Com = 0;
 DFRobot_DHT20::DFRobot_DHT20(SoftwareTwoWire * pWire,uint8_t address)
   : _pWire(pWire) {
+  _address = address;
+}
+DFRobot_DHT20::DFRobot_DHT20(TwoWire * pWire,uint8_t address)
+  : _pWire1(pWire) {
   _address = address;
 }
 
@@ -25,7 +29,12 @@ DFRobot_DHT20::DFRobot_DHT20()
 int DFRobot_DHT20::begin() {
   uint8_t readCMD[3]={0x71};
   uint8_t data;
-  if(_pWire == NULL) return 1;
+  if(dht20Com == 1){
+    if(_pWire == NULL) return 1;
+  }else{
+    if(_pWire1 == NULL) return 1;
+  }
+
   delay(100);
 
   //check if the IIC communication works 
@@ -46,8 +55,14 @@ int DFRobot_DHT20::begin(uint8_t address) {
 }
 
 bool DFRobot_DHT20::isOnline(){
-  _pWire->beginTransmission(_address);
-  if(_pWire->endTransmission() == 0) return true;
+  if(dht20Com == 1){
+    _pWire->beginTransmission(_address);
+    if(_pWire->endTransmission() == 0) return true;
+  }else{
+    _pWire1->beginTransmission(_address);
+    if(_pWire1->endTransmission() == 0) return true;
+  }
+
   return false;
 }
 
@@ -108,13 +123,24 @@ void DFRobot_DHT20::writeCommand(const void *pBuf, size_t size) {
   }
 
   uint8_t * _pBuf = (uint8_t *)pBuf;
-  _pWire->beginTransmission(_address);
-  for (uint8_t i = 0; i < size; i++) {
-    
-    _pWire->write(_pBuf[i]);
-    
+  if(dht20Com == 1){
+    _pWire->beginTransmission(_address);
+    for (uint8_t i = 0; i < size; i++) {
+      
+      _pWire->write(_pBuf[i]);
+      
+    }
+    _pWire->endTransmission();
+  }else{
+    _pWire1->beginTransmission(_address);
+    for (uint8_t i = 0; i < size; i++) {
+      
+      _pWire1->write(_pBuf[i]);
+      
+    }
+    _pWire1->endTransmission();
   }
-  _pWire->endTransmission();
+
 }
 
 uint8_t DFRobot_DHT20::readData(void *pBuf, size_t size) {
@@ -124,15 +150,25 @@ uint8_t DFRobot_DHT20::readData(void *pBuf, size_t size) {
   }
   uint8_t * _pBuf = (uint8_t *)pBuf;
   //read the data returned by the chip
-  _pWire->requestFrom(_address, size);
-  uint8_t i = 0;
-  for (uint8_t i = 0 ; i < size; i++) {
-    _pBuf[i] = _pWire->read();
-    DBG(_pBuf[i]);
+  if(dht20Com == 1){
+    _pWire->requestFrom(_address, size);
+    uint8_t i = 0;
+    for (uint8_t i = 0 ; i < size; i++) {
+      _pBuf[i] = _pWire->read();
+      DBG(_pBuf[i]);
+    }
+  }else{
+    _pWire1->requestFrom(_address, size);
+    uint8_t i = 0;
+    for (uint8_t i = 0 ; i < size; i++) {
+      _pBuf[i] = _pWire1->read();
+      DBG(_pBuf[i]);
+    }
   }
+
   return 1;
   
 }
 
 DFRobot_DHT20 DHT20_1(&SOF_WIRE1, 0x38);
-DFRobot_DHT20 DHT20_2(&SOF_WIRE2, 0x38);
+DFRobot_DHT20 DHT20_2(&Wire1, 0x38);

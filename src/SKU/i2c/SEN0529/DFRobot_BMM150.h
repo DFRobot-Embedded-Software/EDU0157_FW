@@ -16,12 +16,12 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <math.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 
 //#define ENABLE_DBG                //< Open this macro to see the program running in detail
 
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG11
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
 #define DBG(...)
@@ -539,13 +539,15 @@ private:
 
 class DFRobot_BMM150_I2C:public DFRobot_BMM150{
 public:
-  DFRobot_BMM150_I2C(SoftwareTwoWire *pWire, uint8_t addr = 0x75);
+  DFRobot_BMM150_I2C(SoftwareTwoWire *pWire, uint8_t addr);
+  DFRobot_BMM150_I2C(TwoWire *pWire, uint8_t addr);
   uint8_t begin(uint8_t addr);
 protected:
   virtual void     writeData(uint8_t Reg, uint8_t *Data, uint8_t len);
   virtual int16_t  readData(uint8_t Reg, uint8_t *Data, uint8_t len);
 private:
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _I2C_addr;
 };
 

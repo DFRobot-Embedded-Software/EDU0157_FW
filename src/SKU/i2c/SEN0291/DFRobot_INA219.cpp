@@ -14,6 +14,7 @@
 #include <Arduino.h>
 #include "DFRobot_INA219.h"
 
+uint8_t ina219Com = 0;
 bool DFRobot_INA219::begin()
 {
     lastOperateStatus = eIna219_InitError;
@@ -140,26 +141,48 @@ bool DFRobot_INA219_IIC::begin(uint8_t i2caddr){
 void DFRobot_INA219_IIC::writeReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
 {
     lastOperateStatus = eIna219_WriteRegError;
-    _pWire->beginTransmission(_addr);
-    _pWire->write(reg);
-    for(uint16_t i = 0; i < len; i ++)
-        _pWire->write(pBuf[i]);
-    _pWire->endTransmission();
+    if(ina219Com == 1){
+        _pWire->beginTransmission(_addr);
+        _pWire->write(reg);
+        for(uint16_t i = 0; i < len; i ++)
+            _pWire->write(pBuf[i]);
+        _pWire->endTransmission();
+    }else{
+         _pWire1->beginTransmission(_addr);
+        _pWire1->write(reg);
+        for(uint16_t i = 0; i < len; i ++)
+            _pWire1->write(pBuf[i]);
+        _pWire1->endTransmission();
+    }
+   
     lastOperateStatus = eIna219_ok;
 }
 
 void DFRobot_INA219_IIC::readReg(uint8_t reg, uint8_t *pBuf, uint16_t len)
 {
     lastOperateStatus = eIna219_ReadRegError;
-    _pWire->beginTransmission(_addr);
-    _pWire->write(reg);
-    if(_pWire->endTransmission() != 0)
-        return;
-    _pWire->requestFrom(_addr, (uint8_t) len);
-    for(uint16_t i = 0; i < len; i ++) {
-        pBuf[i] = _pWire->read();
+    if(ina219Com == 1){
+        _pWire->beginTransmission(_addr);
+        _pWire->write(reg);
+        if(_pWire->endTransmission() != 0)
+            return;
+        _pWire->requestFrom(_addr, (uint8_t) len);
+        for(uint16_t i = 0; i < len; i ++) {
+            pBuf[i] = _pWire->read();
+        }
+        _pWire->endTransmission();
+    }else{
+        _pWire1->beginTransmission(_addr);
+        _pWire1->write(reg);
+        if(_pWire1->endTransmission() != 0)
+            return;
+        _pWire1->requestFrom(_addr, (uint8_t) len);
+        for(uint16_t i = 0; i < len; i ++) {
+            pBuf[i] = _pWire1->read();
+        }
+        _pWire1->endTransmission();
     }
-    _pWire->endTransmission();
+
     lastOperateStatus = eIna219_ok;
 }
 
@@ -187,12 +210,20 @@ void DFRobot_INA219::writeInaReg(uint8_t reg, uint16_t value)
 
 bool DFRobot_INA219_IIC::scan()
 {
-    _pWire->beginTransmission(_addr);
-    if (_pWire->endTransmission() == 0){
-        return true;
+    if(ina219Com == 1){
+        _pWire->beginTransmission(_addr);
+        if (_pWire->endTransmission() == 0){
+            return true;
+        }
+    }else{
+        _pWire1->beginTransmission(_addr);
+        if (_pWire1->endTransmission() == 0){
+            return true;
+        }
     }
+    
     return false;
 }
 
 DFRobot_INA219_IIC INA219_1(&SOF_WIRE1, 0x45);
-DFRobot_INA219_IIC INA219_2(&SOF_WIRE2, 0x45);
+DFRobot_INA219_IIC INA219_2(&Wire1, 0x45);

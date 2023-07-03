@@ -12,7 +12,7 @@
  
 #ifndef _DFROBOT_INA219_H
 #define _DFROBOT_INA219_H
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 #define INA219_I2C_ADDRESS1                      (0x40)///< I2C ADDRESS 1
 #define INA219_I2C_ADDRESS2                      (0x41)///< I2C ADDRESS 2
@@ -273,6 +273,7 @@ public:
      * @n INA219_I2C_ADDRESS4  0x45   A0 = 1  A1 = 1
      */
     DFRobot_INA219_IIC(SoftwareTwoWire *pWire, uint8_t i2caddr) : DFRobot_INA219() { _pWire = pWire; _addr = i2caddr; }
+    DFRobot_INA219_IIC(TwoWire *pWire, uint8_t i2caddr) : DFRobot_INA219() { _pWire1 = pWire; _addr = i2caddr; }
 
     bool begin(uint8_t i2caddr);
 
@@ -282,6 +283,7 @@ protected:
     bool scan();
     uint8_t   _addr;
     SoftwareTwoWire   *_pWire;
+    TwoWire   *_pWire1;
 };
 
 extern DFRobot_INA219_IIC INA219_1;

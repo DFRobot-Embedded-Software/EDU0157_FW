@@ -11,6 +11,8 @@
  */
 
 #include "DFRobot_PCF8563T.h"
+sPCF8563TTime_t rtt;
+extern sGeneral_t *pGeneral;
 
 /*控制和状态寄存器*/
 #define REG_CNTRL_STATUS1_1  0x00 ///< control and status register 1
@@ -113,10 +115,19 @@ typedef struct{
     };
 }sTimeRegConfig_t, *pTimeRegConfig_t;
 uint32_t  displayms;
-DFRobot_PCF8563T::DFRobot_PCF8563T(TwoWire *pWire, uint8_t addr)
+
+uint8_t pcf8563tCom = 0;
+DFRobot_PCF8563T::DFRobot_PCF8563T(SoftwareTwoWire *pWire, uint8_t addr)
   :_pWire(pWire),_addr(addr){
     memset(&_t, 0, sizeof(_t));
+    pcf8563tCom = 1;
 }
+
+// DFRobot_PCF8563T::DFRobot_PCF8563T(TwoWire *pWire, uint8_t addr)
+//  :_pWire1(pWire),_addr(addr){
+//     memset(&_t, 0, sizeof(_t));
+//     pcf8563tCom = 2;
+// }
 
 void DFRobot_PCF8563T::begin(const __FlashStringHelper* date, const __FlashStringHelper* time){
     char buff[11];
@@ -191,36 +202,66 @@ sPCF8563TTime_t DFRobot_PCF8563T::getTime(){
 }
 
 void DFRobot_PCF8563T::writeReg(uint8_t reg){
-    _pWire->beginTransmission(_addr);
-    _pWire->write(reg);
-    _pWire->endTransmission();
-}
+    if(pcf8563tCom == 1){
+      _pWire->beginTransmission(_addr);
+      _pWire->write(reg);
+      _pWire->endTransmission();
+    }else{
+      _pWire1->beginTransmission(_addr);
+      _pWire1->write(reg);
+      _pWire1->endTransmission();
+    }
+    }
+   
 
 void DFRobot_PCF8563T::writeData(void *pdata, int16_t len){
     if((pdata == NULL) || len == 0) return ;
     uint8_t *pBuf = (uint8_t *)pdata;
-    _pWire->beginTransmission(_addr);
-    _pWire->write(pBuf, len);
-    _pWire->endTransmission();
+    if(pcf8563tCom == 1){
+      _pWire->beginTransmission(_addr);
+      _pWire->write(pBuf, len);
+      _pWire->endTransmission();
+    }else{
+      _pWire1->beginTransmission(_addr);
+      _pWire1->write(pBuf, len);
+      _pWire1->endTransmission();
+    }
+    
 }
 
 void DFRobot_PCF8563T::writeData(uint8_t reg, void *pdata, int16_t len){
     if((pdata == NULL) || len == 0) return ;
     uint8_t *pBuf = (uint8_t *)pdata;
-    _pWire->beginTransmission(_addr);
-    _pWire->write(reg);
-    _pWire->write(pBuf, len);
-    _pWire->endTransmission();
+    if(pcf8563tCom == 1){
+      _pWire->beginTransmission(_addr);
+      _pWire->write(reg);
+      _pWire->write(pBuf, len);
+      _pWire->endTransmission();
+    }else{
+      _pWire1->beginTransmission(_addr);
+      _pWire1->write(reg);
+      _pWire1->write(pBuf, len);
+      _pWire1->endTransmission();
+    }
+    
 
 }
 
 int16_t DFRobot_PCF8563T::readReg(void *pdata, int16_t len){
     if((pdata == NULL) || len == 0) return 0;
     uint8_t *pBuf = (uint8_t *)pdata;
-    _pWire->requestFrom(_addr, len);
-    for(int16_t i = 0; i < len; i++){
+    if(pcf8563tCom == 1){
+      _pWire->requestFrom(_addr, len);
+      for(int16_t i = 0; i < len; i++){
         pBuf[i] = _pWire->read();
+      }
+    }else{
+      _pWire1->requestFrom(_addr, len);
+      for(int16_t i = 0; i < len; i++){
+        pBuf[i] = _pWire1->read();
+      }
     }
+    
     return len;
 }
 
@@ -275,3 +316,140 @@ uint16_t DFRobot_PCF8563T::date2days(uint16_t year, uint8_t month, uint8_t day){
 uint8_t DFRobot_PCF8563T::decToBCD(uint8_t num){
     return ((num / 10 * 16) + (num % 10));
 }
+
+void DFRobot_PCF8563T::rtc_setup(void)
+{
+    begin(2022,8,9,2,23,58,0);
+}
+sPCF8563TTime_t DFRobot_PCF8563T::get_rtc(void)
+{
+   return getTime();
+}
+String DFRobot_PCF8563T::getHourMinuteSecond(void)
+{
+    String str = "";
+    sPCF8563TTime_t time = PCF8563T_1.getTime();
+    str += String(time.year);
+    str += '_';
+    if(time.month < 10) str += '0';
+    str += String(time.month) + '_';
+    if(time.day < 10) str += '0';
+    str += String(time.day) + '_';
+    if(time.hour < 10) str += '0';
+    str += String(time.hour) + ':';
+    if(time.minute < 10) str += '0';
+    str += String(time.minute) + ':';
+    if(time.second < 10) str += '0';
+    str += String(time.second);
+    return str;
+}
+String DFRobot_PCF8563T::convertHourMinuteSecond(sPCF8563TTime_t t)
+{
+    String rlt = "";
+    if(t.hour < 10) rlt += "0";
+    rlt += String(t.hour) + ":";
+    if(t.minute < 10) rlt += "0";
+    rlt += String(t.minute) + ":";
+    if(t.second < 10) rlt += "0";
+    rlt += String(t.second);
+    return rlt;
+}
+char data[50]={0};
+char* DFRobot_PCF8563T::convertDataFileName(sPCF8563TTime_t t){
+    memset(data,0,50);
+    //if(t.year < 1000) rlt += '0';
+    //if(t.year < 100) rlt += '0';
+    //if(t.year < 10) rlt += '0';
+    // rlt += String(t.year) + '_';
+    // if(t.month < 10) rlt += '0';
+    // rlt += String(t.month) + '_';
+    // if(t.day < 10) rlt += '0';
+    // rlt += String(t.day) + '_';
+
+    // if(t.hour < 10) rlt += '0';
+    // rlt += String(t.hour) + '_';
+    // if(t.minute < 10) rlt += '0';
+    // rlt += String(t.minute) + '_';
+    // if(t.second < 10) rlt += '0';
+    // rlt += String(t.second) + ".CSV";
+    strcat(data,((String)t.year).c_str());
+    strcat(data,"_");
+    
+    if(t.month < 10) strcat(data,"0");
+    strcat(data,((String)t.month).c_str());
+    strcat(data,"_");
+    if(t.day < 10) strcat(data,"0");
+    strcat(data,((String)t.day).c_str());
+    strcat(data,"_");
+    if(t.hour < 10) strcat(data,"0");
+    strcat(data,((String)t.hour).c_str());
+    strcat(data,"_");
+    if(t.minute < 10)strcat(data,"0");
+    strcat(data,((String)t.minute).c_str());
+    strcat(data,"_");
+    if(t.second < 10) strcat(data,"0");
+    strcat(data,((String)t.second).c_str());
+    strcat(data,".CSV");
+    return data;
+}
+
+void DFRobot_PCF8563T::setCountDown(void)
+{
+    if(pcf8563tCom == 1){
+         _pWire->beginTransmission(_addr);
+        _pWire->write(0X01);
+        _pWire->write(0X01);
+        _pWire->endTransmission();
+        if(pGeneral->sUnit == SECOND){
+            _pWire->beginTransmission(_addr);
+            _pWire->write(0X0E);
+            _pWire->write(0X82);
+            _pWire->write(pGeneral->sSampleRate);
+            _pWire->endTransmission();
+        }else if(pGeneral->sUnit == MINUTE){
+            _pWire->beginTransmission(_addr);
+            _pWire->write(0X0E);
+            _pWire->write(0X83);
+            _pWire->write(pGeneral->sSampleRate);
+            _pWire->endTransmission();
+    }
+    }else{
+        _pWire1->beginTransmission(_addr);
+        _pWire1->write(0X01);
+        _pWire1->write(0X01);
+        _pWire1->endTransmission();
+        if(pGeneral->sUnit == SECOND){
+        _pWire1->beginTransmission(_addr);
+        _pWire1->write(0X0E);
+        _pWire1->write(0X82);
+        _pWire1->write(pGeneral->sSampleRate);
+        _pWire1->endTransmission();
+        }else if(pGeneral->sUnit == MINUTE){
+            _pWire1->beginTransmission(_addr);
+            _pWire1->write(0X0E);
+            _pWire1->write(0X83);
+            _pWire1->write(pGeneral->sSampleRate);
+            _pWire1->endTransmission();
+        }
+    }
+    
+   
+}
+void  DFRobot_PCF8563T::cleanState(void){
+    if(pcf8563tCom == 1){
+        _pWire->beginTransmission(_addr);
+        _pWire->write(0X01);
+        _pWire->write(0X01);
+        _pWire->endTransmission();
+    }else{
+        _pWire1->beginTransmission(_addr);
+        _pWire1->write(0X01);
+        _pWire1->write(0X01);
+        _pWire1->endTransmission();
+    }
+}
+
+
+
+DFRobot_PCF8563T PCF8563T_1(&SOF_WIRE1,0x51);
+//DFRobot_PCF8563T PCF8563T_2(&Wire1,0x51);

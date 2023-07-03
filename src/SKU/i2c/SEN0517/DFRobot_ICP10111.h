@@ -16,10 +16,10 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 //#define ENABLE_DBG //!< Open this macro and you can see the details of the program
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG9
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
 #define DBG(...)
@@ -48,7 +48,8 @@ public:
    * @param address I2C address
    * @return None 
    */
-    DFRobot_ICP10111(SoftwareTwoWire *pWire, uint8_t address = 0x63);
+    DFRobot_ICP10111(SoftwareTwoWire *pWire, uint8_t address);
+    DFRobot_ICP10111(TwoWire *pWire, uint8_t address);
 
   /**
    * @fn begin
@@ -135,6 +136,7 @@ private:
 private:
 
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _address;
   uint16_t _mode;
 

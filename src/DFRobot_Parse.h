@@ -18,7 +18,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <Arduino.h>
-#include "global.h"
+#include "DFRobot_queue.h"
+#include "general.h"
+
+#ifdef ENABLE_PARSE_DBG
+#define ENABLE_PARSE_DBG(...) {Serial.print("parse ");Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
+#else
+#define ENABLE_PARSE_DBG(...)
+#endif
+
 
 #define CMD_START            0x00
 // #define CMD_SET_IF0          0x00  ///< 设置接口0命令，可以用此命令配置A&D接口的功能和SKU
@@ -91,6 +99,13 @@
 #define CMD_GET_VERSION             0x05 //获取版本号
 #define CMD_RESET_DATA              0x06
 
+#define CMD_RADIUS_DATA              0x07//设置风杯半径
+#define CMD_SPEED1_DATA              0x08//设置标准风速1
+#define CMD_SPEED2_DATA              0x09//设置标准风速2
+#define CMD_CALIBRATOR               0x0a//开始校准计算
+#define CMD_PROJECT                  0x0b//工程模式采样
+
+
 /**
  * @fn i2cSend
  * @brief I2C发送包打包
@@ -98,7 +113,7 @@
  * @param data 数据缓存
  * @param len  数据长度
  */
-extern void i2cSend(uint8_t *data, uint16_t len);
+void i2cSend(uint8_t *data, uint16_t len);
 
 /**
  * @fn uartSend
@@ -107,7 +122,8 @@ extern void i2cSend(uint8_t *data, uint16_t len);
  * @param data 数据缓存
  * @param len  数据长度
  */
-extern void uartSend(uint8_t *data, uint16_t len);
+void uartSend(uint8_t *data, uint16_t len);
+
 /**
  * @fn DFRobot_Response
  * @brief 响应包打包
@@ -115,211 +131,8 @@ extern void uartSend(uint8_t *data, uint16_t len);
  * @param data 数据缓存
  * @param len  数据长度
  */
-extern void DFRobot_Response(uint8_t *data, uint8_t len);
+void DFRobot_Response(uint8_t *data, uint8_t len);
 
-
-
-// /**
-//  * @fn setOrGetInterface0
-//  * @brief 设置或获取接口0(A&D)的配置
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t setOrGetInterface0(pCmdPacktet_t pkt);
-// /**
-//  * @fn setOrGetInterface1
-//  * @brief 设置或获取接口1(I2C&UART1)的配置
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t setOrGetInterface1(pCmdPacktet_t pkt);
-// /**
-//  * @fn setOrGetInterface2
-//  * @brief 设置或获取接口2(I2C&UART1)的配置
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t setOrGetInterface2(pCmdPacktet_t pkt);
-// /**
-//  * @fn setOrGetI2CAddress
-//  * @brief 设置或获取从机I2C地址
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t setOrGetI2CAddress(pCmdPacktet_t pkt);
-// /**
-//  * @fn setOrGetTime
-//  * @brief 设置或获取时间
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t setOrGetTime(pCmdPacktet_t pkt);
-// /**
-//  * @fn enableRecord
-//  * @brief 开启记录
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t enableRecord(pCmdPacktet_t pkt);
-// /**
-//  * @fn disableRecord
-//  * @brief 关闭记录
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t disableRecord(pCmdPacktet_t pkt);
-// /**
-//  * @fn oledScreenOn
-//  * @brief oled屏幕开
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t oledScreenOn(pCmdPacktet_t pkt);
-// /**
-//  * @fn oledScreenOff
-//  * @brief oled屏幕关
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t oledScreenOff(pCmdPacktet_t pkt);
-
-// /**
-//  * @fn getSensorDataName
-//  * @brief 获取传感器数据名
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getSensorDataName(pCmdPacktet_t pkt);
-// /**
-//  * @fn getSensorDataValue
-//  * @brief 获取传感器数据值
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getSensorDataValue(pCmdPacktet_t pkt);
-// /**
-//  * @fn getSensorDataUnit
-//  * @brief 获取传感器数据单位
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getSensorDataUnit(pCmdPacktet_t pkt);
-// /**
-//  * @fn getInformation
-//  * @brief 获取信息项
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getInformation(pCmdPacktet_t pkt);
-// /**
-//  * @fn getSKU
-//  * @brief 获取SKU列表
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getSKU(pCmdPacktet_t pkt);
-// /**
-//  * @fn getValue0
-//  * @brief 根据数据名获取对应的数据的值
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getValue0(pCmdPacktet_t pkt);
-// /**
-//  * @fn getValue1
-//  * @brief 根据数据名获取选中的接口对应的数据的值
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getValue1(pCmdPacktet_t pkt);
-// /**
-//  * @fn getValue2
-//  * @brief 根据数据名获取选中的接口上指定SKU对应的数据的值
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getValue2(pCmdPacktet_t pkt);
-// /**
-//  * @fn getUnit0
-//  * @brief 根据数据名获取对应的数据的单位
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getUnit0(pCmdPacktet_t pkt);
-// /**
-//  * @fn getUnit1
-//  * @brief 根据数据名获取选中的接口对应的数据的单位
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getUnit1(pCmdPacktet_t pkt);
-// /**
-//  * @fn getUnit2
-//  * @brief 根据数据名获取选中的接口上指定SKU对应的数据的单位
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getUnit2(pCmdPacktet_t pkt);
-// /**
-//  * @fn reset
-//  * @brief 复位
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern void reset(pCmdPacktet_t pkt);
-// /**
-//  * @fn getAnalogSKU
-//  * @brief 获取Analog类型传感器的支持列表
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getAnalogSKU(pCmdPacktet_t pkt);
-// /**
-//  * @fn getDigitalSKU
-//  * @brief 获取Digital类型传感器的支持列表
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getDigitalSKU(pCmdPacktet_t pkt);
-// /**
-//  * @fn getI2CSKU
-//  * @brief 获取I2C类型传感器的支持列表
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getI2CSKU(pCmdPacktet_t pkt);
-// /**
-//  * @fn getUARTSKU
-//  * @brief 获取UART类型传感器的支持列表
-//  * 
-//  * @param pkt 指向pCmdPacktet_t命令包
-//  * @return uint8_t 错误代码
-//  */
-// extern uint8_t getUARTSKU(pCmdPacktet_t pkt);
 /**
  * @fn parseCmdPkt
  * @brief 解析命令包
@@ -328,28 +141,128 @@ extern void DFRobot_Response(uint8_t *data, uint8_t len);
  * @return uint8_t 错误代码
  */
 extern void parseCmdPkt(pCmdPacktet_t pkt);
+// extern uint8_t  getTimestamp(pCmdPacktet_t pkt);
 
-extern uint8_t  getTimestamp(pCmdPacktet_t pkt);
-extern uint8_t  setOrGetRefreshRate(pCmdPacktet_t pkt);
+// extern uint8_t  setOrGetRefreshRate(pCmdPacktet_t pkt);
+/**
+ * @fn getVersion
+ * @brief 获取版本号
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t  getVersion(pCmdPacktet_t pkt);
-
+/**
+ * @fn getData
+ * @brief 获取数据
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t getData(pCmdPacktet_t pkt);
+/**
+ * @fn getUint
+ * @brief 获取单位
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t getUint(pCmdPacktet_t pkt);
+/**
+ * @fn getALLData
+ * @brief 获取全部数据，包含数据和单位
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t getALLData(pCmdPacktet_t pkt);
+/**
+ * @fn set_Time
+ * @brief 设置RTC时间
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t set_Time(pCmdPacktet_t pkt);
+/**
+ * @fn getTime
+ * @brief 获取RTC时间
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t getTime(pCmdPacktet_t pkt);
+/**
+ * @fn resetData
+ * @brief 数据获取失败，重置包
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
 extern uint8_t resetData(pCmdPacktet_t pkt);
+/**
+ * @fn setRadius
+ * @brief 设置风杯半径
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
+extern uint8_t setRadius(pCmdPacktet_t pkt);
+/**
+ * @fn setStandaraWindSpeed1
+ * @brief 设置标准风速1
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
+uint8_t setStandaraWindSpeed1(pCmdPacktet_t pkt);
+/**
+ * @fn setStandaraWindSpeed2
+ * @brief 设置标准风速2
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
+uint8_t setStandaraWindSpeed2(pCmdPacktet_t pkt);
+/**
+ * @fn calibrator
+ * @brief 开始风速校正
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
+uint8_t calibrator(pCmdPacktet_t pkt);
+/**
+ * @fn project
+ * @brief 设置工程模式采样
+ * 
+ * @param pkt 指向pCmdPacktet_t命令包
+ * @return uint8_t 错误代码
+ */
+uint8_t project(pCmdPacktet_t pkt);
 
 /**
  * @fn getAllDataName
- * @brief 获取指定一个或多个接口上连接的货号为sku传感器，属性名为key的传感器的数值
+ * @brief 根据名称获取数据
  * 
- * @param if_flag bit0: 1->表示选中A&D接口 bit1: 1->表示选中I2C&UART1接口 bit2: 1->表示选中I2C&UART2接口
- * @return String 返回指定一个或多个接口上连接的货号为sku传感器，属性名为key的传感器的数值
+ * @param key 需要获取数据得名称
+ * @return String 返回获取的数据
  */
-extern String getAllValue(const char *key);
-extern String getAllUint(const char *key);
-extern String combinationAllValue(pCmdPacktet_t key);
-
-
+String getAllValue(const char *key);
+/**
+ * @fn getAllUint
+ * @brief 根据名称获取对应得单位
+ * 
+ * @param key 需要获取数据得名称
+ * @return String 返回获取的单位
+ */
+String getAllUint(const char *key);
+/**
+ * @fn combinationAllValue
+ * @brief 打包全部数据
+ * 
+ * @param key 确定数据是否需要添加时间戳
+ * @return String 返回获取的全部数据
+ */
+String combinationAllValue(pCmdPacktet_t key);
 #endif

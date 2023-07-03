@@ -110,17 +110,11 @@ void SoftwareTwoWire::startSignal(void){
   digitalWrite(_sda,LOW);
   delayMicroseconds(5);
   digitalWrite(_scl,LOW);
-  //delayMicroseconds(50);
+  delayMicroseconds(50);
 }
 //停止信号：scl高电平期间，sda由低到高的跳变
 void SoftwareTwoWire::stopSignal(void){
-  // digitalWrite(_sda,LOW);
-  // delayMicroseconds(5);
-  // digitalWrite(_scl,HIGH);
-  // delayMicroseconds(5);
-  // digitalWrite(_sda,HIGH);
-  // delayMicroseconds(5);
-   digitalWrite(_sda,LOW);
+  digitalWrite(_sda,LOW);
   digitalWrite(_scl,HIGH);
   delayMicroseconds(5);
   digitalWrite(_sda,HIGH);
@@ -128,20 +122,6 @@ void SoftwareTwoWire::stopSignal(void){
 }
 
 uint8_t SoftwareTwoWire::sendByte(uint8_t data){
-  // for(int i=7; i>=0;i--){  
-  //   //digitalWrite(_scl,LOW);
-  //   if(data & (1<<i)){
-  //     digitalWrite(_sda,HIGH);//在scl低电平期间改变sda电平的状态，并持续一段时间
-  //   }else{
-  //     digitalWrite(_sda,LOW);
-  //   }
-  //   delayMicroseconds(5); 
-  //   digitalWrite(_scl,HIGH);
-  //   delayMicroseconds(5);
-  //   digitalWrite(_scl,LOW);
-  // }
-  // delayMicroseconds(5);
-  // return recvAck();
    for(int i=7; i>=0;i--){  
     digitalWrite(_scl,LOW);
     if(data & (1<<i)){
@@ -184,21 +164,11 @@ void SoftwareTwoWire::sendAck(uint8_t ack){
   delayMicroseconds(5);
   digitalWrite(_scl,LOW);
   if(!ack) digitalWrite(_sda,HIGH);
-  //delayMicroseconds(20);
+  delayMicroseconds(20);
 }
 //0:有效应答， 1：无效应答，在ACK中检测时钟延展
 uint8_t SoftwareTwoWire::recvAck(void){
-  // uint8_t ack=0;  
-  
-  // digitalWrite(_scl,HIGH);
-  // pinMode(_sda,INPUT_PULLUP);
-  // ack=digitalRead(_sda);
-  // delayMicroseconds(5);
-  // digitalWrite(_scl,LOW);
-  // delayMicroseconds(5);
-  // pinMode(_sda,OUTPUT);
-  // return ack;
-    uint8_t ack=0;
+  uint8_t ack=0;
   digitalWrite(_scl,LOW);
   pinMode(_sda,INPUT_PULLUP);
   delayMicroseconds(5);

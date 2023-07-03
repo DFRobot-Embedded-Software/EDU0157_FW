@@ -14,13 +14,13 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 
 //Open the macro to see the program running details 
-#define ENABLE_DBG
+//#define ENABLE_DBG
 
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG5
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
 #define DBG(...)
@@ -56,6 +56,7 @@ public:
    * @param  p     Void pointer to subclass address 
    */
   DFRobot_SHT(uint8_t addr, SoftwareTwoWire *pWire, sDev_t * dev, void * p);
+  DFRobot_SHT(uint8_t addr, TwoWire *pWire, sDev_t * dev, void * p);
   ~DFRobot_SHT(){};
 
   /**
@@ -160,6 +161,7 @@ protected:
 
 protected:
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   void* _p;
   uint8_t _deviceAddr;
   sDev_t * _dev;

@@ -13,11 +13,11 @@
 #define __DFROBOT_VEML7700_H__
 
 #include <Arduino.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 
 // #define ENABLE_DBG   //!< Open this macro and you can see the details of the program
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG2
   #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
   #define DBG(...)
@@ -94,6 +94,7 @@ public:
    */
   DFRobot_VEML7700();
   DFRobot_VEML7700(SoftwareTwoWire *pWire, uint8_t addr);
+  DFRobot_VEML7700(TwoWire *pWire, uint8_t addr);
 
   /**
    * @fn setGain
@@ -434,6 +435,7 @@ private:
                       uint32_t& raw_counts);
 private:  
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   uint8_t _addr;
     //uint8_t _address;
 };

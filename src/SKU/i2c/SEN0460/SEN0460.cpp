@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0460.h"
-
+extern uint8_t airqCom;
 static DFRobot_AirQualitySensor *getDFRobot_AirQ(uint8_t ifn){
     DFRobot_AirQualitySensor *airq = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_AirQualitySensor *getDFRobot_AirQ(uint8_t ifn){
         default:
               return NULL;
     }
+    airqCom = ifn;
     return airq;
 }
 

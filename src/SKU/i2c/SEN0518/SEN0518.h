@@ -12,7 +12,7 @@
 #ifndef SEN0518_H
 #define SEN0518_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_BloodOxygen_S.h"
 /**
  * @fn SEN0518_SETUP

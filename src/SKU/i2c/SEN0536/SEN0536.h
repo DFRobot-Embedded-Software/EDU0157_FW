@@ -12,7 +12,7 @@
 #ifndef SEN0536_H
 #define SEN0536_H
 #include "Arduino.h"
-#include "../../../global.h"
+#include "../../sensor_i2c.h"
 #include "DFRobot_SCD4X.h"
 
 /**

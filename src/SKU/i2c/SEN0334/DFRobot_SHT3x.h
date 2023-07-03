@@ -15,10 +15,10 @@
 #define DFROBOT_SHT3X_H
 #include "Arduino.h"
 #include <Wire.h>
-#include "../../../software_iic.h"
+#include "../../software_iic.h"
 
 //#define ENABLE_DBG
-#ifdef ENABLE_DBG
+#ifdef ENABLE_DBG3
 #define DBG(...) {Serial.print("[");Serial.print(__FUNCTION__); Serial.print("(): "); Serial.print(__LINE__); Serial.print(" ] "); Serial.println(__VA_ARGS__);}
 #else
 #define DBG(...)
@@ -68,8 +68,8 @@ class DFRobot_SHT3x
 {
 public:
   #define ERR_OK             0      //No error
-  #define ERR_DATA_BUS      -1      //Data bus error
-  #define ERR_IC_VERSION    -2      //Chip version does not match
+  #define ERR_DATA_BUS2      -1      //Data bus error
+  #define ERR_IC_VERSION2    -2      //Chip version does not match
   
   /**
    * @struct sStatusRegister_t
@@ -178,7 +178,8 @@ public:
    * @n When the ADR is connected to VDD, the chip IIC address is 0x45.
    * @n When the ADR is connected to GND, the chip IIC address is 0x44.
    */
-  DFRobot_SHT3x(SoftwareTwoWire *pWire, uint8_t address = 0x45,uint8_t RST = 4);
+  DFRobot_SHT3x(SoftwareTwoWire *pWire, uint8_t address,uint8_t RST);
+  DFRobot_SHT3x(TwoWire *pWire, uint8_t address,uint8_t RST);
   
   /**
    * @fn readSerialNumber
@@ -558,6 +559,7 @@ private:
   sLimitData_t limitData;
   sRHAndTemp_t tempRH;
   SoftwareTwoWire *_pWire;
+  TwoWire *_pWire1;
   eMode_t measurementMode ;
   uint8_t _address;
   uint8_t _RST;

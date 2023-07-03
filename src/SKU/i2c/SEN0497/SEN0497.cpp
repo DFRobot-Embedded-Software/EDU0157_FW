@@ -10,7 +10,7 @@
  * @url https://github.com/DFRobot-Embedded-Software/DFR0999-FW
  */
 #include "SEN0497.h"
-
+extern uint8_t dht20Com;
 static DFRobot_DHT20 *getDFRobot_DHT20(uint8_t ifn){
     DFRobot_DHT20 *dht20 = NULL;
     switch(ifn){
@@ -23,6 +23,7 @@ static DFRobot_DHT20 *getDFRobot_DHT20(uint8_t ifn){
         default:
               return NULL;
     }
+    dht20Com = ifn;
     return dht20;
 }
 
