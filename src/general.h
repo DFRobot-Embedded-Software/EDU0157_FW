@@ -103,6 +103,7 @@ typedef struct{
   char* sDTUPWD;
   char* sDTUSave;
   uint8_t sDtuState;
+  uint8_t sDTUConnectState;//WiFi连接成功中途断网状态标志位
 
   float sStandWindSpeed1;//标准风速1
   float sAtPresentSpeed1;//当前风速1

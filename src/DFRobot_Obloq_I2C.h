@@ -13,12 +13,12 @@ typedef uint8_t   BYTE;
 #define DEBUGGER_LOG(PARAM, ...)     \
     if (DEBUGGER || PARAM->debug)    \
     {                                \
-        Serial1.print("[");           \
-        Serial1.print(__FUNCTION__);  \
-        Serial1.print("(): ");        \
-        Serial1.print(__LINE__);      \
-        Serial1.print(" ] ");         \
-        Serial1.println(__VA_ARGS__); \
+        Serial.print("[");           \
+        Serial.print(__FUNCTION__);  \
+        Serial.print("(): ");        \
+        Serial.print(__LINE__);      \
+        Serial.print(" ] ");         \
+        Serial.println(__VA_ARGS__); \
     }
 
 #define MUTEX_TICK(PARAM, ...)            \
@@ -165,6 +165,9 @@ enum CommandExecutEIndex
     COMMAND_EXECUTE_ONENETMQTT_CONNECT,
     COMMAND_EXECUTE_RESEAT = 0X17,
     COMMAND_NEW_PUBLICH = 0x18,
+    COMMAND_EXECUTE_DISCONNECT_MQTT = 0x15,
+
+
 };
 
 enum CommandReadIndex

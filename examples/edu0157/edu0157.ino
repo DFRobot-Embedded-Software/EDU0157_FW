@@ -160,7 +160,7 @@ void loop(void)
     i2cloop();
   }
 #if 1
- if(pGeneral->sLowPower == ON){
+ if(pGeneral->sLowPower == ON){//低功耗模式
     i++;
     if(i == 4000){
       i = 0;

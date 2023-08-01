@@ -146,7 +146,7 @@ void publishData(void)
 {
   struct sDTUData * p = DTU_HEAD;
   struct I2CSensorInfo *p1 = I2C_SENSOR_INFO_HEAD;
-  if(pGeneral->sDtuState == 1){
+  if(pGeneral->sDtuState == 1){//开DTU
     RGBStart(1);
     while(p){
       if(String(p->key) == "Speed"){
@@ -186,7 +186,9 @@ void wifi(void)
     // WiFi连接
     if(obloq.wifiConnect(pGeneral->sDTUWIFISSID, pGeneral->sDTUWIFIPASSWORD) == 1){
       if(obloq.mqttConnect(pGeneral->sDTUID,pGeneral->sDTUPWD,pGeneral->sDTUIP,pGeneral->sDTUPort) == 1){
-        pGeneral->sDtuState = 1;
+        pGeneral->sDtuState = 1;//初始联网成功
+        pGeneral->sDTUConnectState = 1;//联网成功
+        
       }else{
         setRGBColor(eYellow);
       }
@@ -212,7 +214,11 @@ void RGBEnd(uint8_t location){
                 if(location == 0){
                   RGBFundamental();
                 }else{
-                  setRGBColor(eViolet);
+                  if(pGeneral->sDTUConnectState == 1){
+                    setRGBColor(eViolet);
+                  }else{
+                    setRGBColor(eYellow);
+                  }
                 }
               }else{
                 RGBFundamental();
@@ -228,7 +234,12 @@ void RGBStart(uint8_t location){
                 if(location == 0){
                   RGBFundamental();
                 }else{
-                  setRGBColor(eViolet);
+                  if(pGeneral->sDTUConnectState == 1){
+                    setRGBColor(eViolet);
+                  }else{
+                    setRGBColor(eYellow);
+                  }
+                  
                 }
             }else{
                 RGBFundamental();

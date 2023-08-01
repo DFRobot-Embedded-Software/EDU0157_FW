@@ -14,7 +14,7 @@ uint8_t DFRobot_Obloq_I2C::publish(const String topic, const String &message)
     DEBUGGER_LOG(this, ">=====> publish");
     uint64_t timeStart= millis();
     uint64_t timeEnd;
-    uint8_t cmdbuffer[2];
+    uint8_t cmdbuffer[20];
     String _message = String(pGeneral->sDTUSave);
     _message += ":";
     _message += topic;
@@ -32,12 +32,57 @@ uint8_t DFRobot_Obloq_I2C::publish(const String topic, const String &message)
             DEBUGGER_LOG(this, "read error");
         }else
         {
-            if (cmdbuffer[0] == RETURN_COMMAND_RESERVE_0x0D && cmdbuffer[1] == 0x01){
+            DEBUGGER_LOG(this, cmdbuffer[0]);
+            DEBUGGER_LOG(this, cmdbuffer[1]);
+            if (cmdbuffer[0] == RETURN_COMMAND_MQTT_PUBLISH && cmdbuffer[1] == 0x01){
                 DEBUGGER_LOG(this, "sub OK");
+                pGeneral->sDTUConnectState = 1;
+                break;
+            }else if(cmdbuffer[0] == RETURN_COMMAND_MQTT && cmdbuffer[1] == 0x02){
+                DEBUGGER_LOG(this, "sub error");
+                if(pGeneral->sLowPower == OFF){
+                    pGeneral->sDTUConnectState = 0;
+                }
                 break;
             }
         }
         delay(200);
+    }
+    if(pGeneral->sLowPower == OFF){
+        if(pGeneral->sDTUConnectState == 0){//中途断网重连
+            DEBUGGER_LOG(this, "COMMAND_EXECUTE_WIFI_RECONNECT");
+            execute(COMMAND_EXECUTE_DISCONNECT_MQTT);
+            delay(100);
+            execute(COMMAND_EXECUTE_WIFI_RECONNECT);
+            delay(100);
+            timeStart= millis();
+            while (1)
+            { timeEnd = millis();
+            if((timeEnd - timeStart) > 10000){
+                return 2;
+            }
+            if (read(cmdbuffer, 2, COMMAND_READTYPE_REG) != 2)
+            {
+                DEBUGGER_LOG(this, "read error");
+            }else
+            {
+                if (cmdbuffer[0] == RETURN_COMMAND_WIFI && cmdbuffer[1] == 0x03){
+                    DEBUGGER_LOG(this, "connect wifi");
+                    read(cmdbuffer, 2, COMMAND_READTYPE_REG);
+                    read(cmdbuffer, cmdbuffer[1], COMMAND_READTYPE_REG);
+                    execute(COMMAND_EXECUTE_MQTT_CONNECT);
+                    delay(100);
+                    execute(COMMAND_NEW_PUBLICH,_message);
+                    delay(100);
+                    read(cmdbuffer, 2, COMMAND_READTYPE_REG);
+                    pGeneral->sDTUConnectState = 1;
+                    return 1;
+                }
+            }
+            delay(200);
+        }
+        runningNode = RUNNING_NODE_WIFI_CONNECT;
+        }
     }
     return 1;
 }
